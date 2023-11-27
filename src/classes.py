@@ -27,7 +27,7 @@ class Path:
     def __init__(self, path: str | list = '/') -> None:
         if isinstance(path, str):
             l = path.split('/')
-            if len(l) <= 2:
+            if l == ['', '']:
                 l = ['/']
         else:
             l = path
@@ -107,6 +107,7 @@ class File:
 
     def __init__(self, path: Path, contents: bytes|None=None):
         name = path[-1]
+        print(name)
         if any(x in name for x in INVALID_FILE_CHARS):
             raise InvalidFilenameError
         self.name = name
@@ -125,7 +126,7 @@ class File:
         return self.contents
     
     def readAsString(self) -> str:
-        encoding = chardet.detect(self.contents).encoding
+        encoding = chardet.detect(self.contents)['encoding']
         return self.contents.decode(encoding)
     
     def __str__(self) -> str:
@@ -168,12 +169,15 @@ class Directory:
         '''Creates a directory'''
         if not isinstance(path, Path):
             path = Path(path)
-
+        
         name = path[-1]
 
         if name in [n.name for n in self.children]:
             raise FileExistsError
         
+        if not path.sroot:
+            path.prepend(self.path)
+
         ndir = Directory(path)
         self.children.append(ndir)
         return ndir
