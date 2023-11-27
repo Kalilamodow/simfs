@@ -74,13 +74,12 @@ class File:
     path: str
     contents: bytes
 
-    def __init__(self, path: Path, parentDir: Directory, create=False):
-        if create:
-            name = path[-1]
-            if any(x in name for x in INVALID_FILE_CHARS):
-                raise InvalidFilenameError
-            if parentDir.exists(path[-1]):
-                raise FileExistsError
+    def __init__(self, path: Path, contents: bytes|None=None):
+        name = path[-1]
+        if any(x in name for x in INVALID_FILE_CHARS):
+            raise InvalidFilenameError
+        self.name = name
+        self.contents = contents if contents is not None else ''.encode()
 
 
     def write(self, contents: bytes, append=False) -> None:
@@ -111,18 +110,15 @@ class Directory:
 
     
     def files(self) -> list[File|Directory]:
-        return self.children
+        return [x.name for x in self.children]
     
-    def create_file(self, fname: str, contents: bytes|None = None) -> File:
+    def create_file(self, fname: str, contents: bytes|None=None) -> File:
         # make sure doesn't exist already
         if fname in [n.name for n in self.children]:
             raise FileExistsError
         
         # ok then create
-        fi = File(Path(str(self.path) + fname), self, True)
-
-        if contents:
-            fi.write(contents)
+        fi = File(Path(str(self.path) + fname), contents)
 
         self.children.append(fi)
         return fi

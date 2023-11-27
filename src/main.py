@@ -9,12 +9,17 @@ class SimulatedFilesystem:
         self.cwd = Path('/')
         self.root = Directory('/')
 
+
+    def validate_directory_tree(self, path: Path|str):
+        # TODO: implement
+        raise NotImplementedError
+
     def get(self, path: Path|str):
         # path path path path path
         if not isinstance(path, Path):
             path = Path(path)
 
-        # TODO: Implement get() method (has to validate folder structure, return the Directory/File)
+        # TODO: Implement get() method (validate dir tree, return the Directory/File)
         if path.cType == 'dir':
             ...
         elif path.cType == 'file':
