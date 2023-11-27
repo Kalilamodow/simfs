@@ -1,4 +1,4 @@
-from classes import Path, Directory, File
+from classes import Path, Directory, File, str_path
 
 
 class SimulatedFilesystem:
@@ -16,16 +16,15 @@ To change `cwd`, use the `.go` method on it.
         self.cwd = Path('/')
         self.root = Directory('/')
 
-
-    def valid_directory_tree(self, path: Path|str) -> bool|Directory:
+    def valid_directory_tree(self, path: Path | str) -> bool | Directory:
         '''Validates a directory tree. If valid, return the end directory.'''
-        if not isinstance(path, Path):
-            path = Path(path)
+        path = str_path(path)
         if not path.sroot:
             path.prepend(self.cwd)
 
         pathAsList = list(path)
-        if path.cType != 'dir': pathAsList = pathAsList[:-1]
+        if path.cType != 'dir':
+            pathAsList = pathAsList[:-1]
         cdir = self.root
         for idx, pathPart in enumerate(pathAsList[1:]):
             if idx == len(pathAsList) - 1:
@@ -33,21 +32,20 @@ To change `cwd`, use the `.go` method on it.
 
             if not cdir.exists(pathPart + '/'):
                 return False
-            
+
             cdir = cdir.get(pathPart + '/')
         return cdir
 
-
-    def get(self, path: Path|str) -> File|Directory|None:
+    def get(self, path: Path | str) -> File | Directory | None:
         '''Gets a file by `path`.
         If `path` is not a root path, prepends `self.cwd`.'''
-        if not isinstance(path, Path):
-            path = Path(path)
+        path = str_path(path)
+
         if not path.sroot:
             path = Path(str(self.cwd) + str(path))
 
         # TODO: Implement get() method (validate dir tree, return the Directory/File)
         if not (pDir := self.valid_directory_tree(path)):
             return None
-        
+
         return pDir.get(path[-1])

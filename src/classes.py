@@ -1,15 +1,20 @@
 from __future__ import annotations
 from exceptions import InvalidFilenameError
-import chardet
 
 
 INVALID_FILE_CHARS = ['/', '\\', '|', '?', ':', '*', '<', '>', '"']
 
+def str_path(src: str|Path) -> Path:
+    '''Converts an str to a Path if the type is an str'''
+    if isinstance(src, str):
+        return Path(src)
+    else:
+        return src
 
 
 class Path:
     '''A path to some File or Directory. Contains logic for folder navigation. The logic is
-    rudimentary and does not apply any checks but whenever it's used some checks should be implemented.
+    rudimentary and does not apply any checks, but whenever it's used some checks should be implemented.
 
     `cType` (string): Can be either "directory" or "file", depending on what it represents.
     `sroot` (bool): Whether it's a root path or not. (Starts with a fslash)
@@ -19,9 +24,9 @@ class Path:
     # private
     __list: list[str]
     __str: str
-    # public
-    cType: str
-    sroot: bool
+    # public with @property
+    _cType: str
+    _sroot: bool
 
 
     def __init__(self, path: str | list = '/') -> None:
@@ -39,13 +44,13 @@ class Path:
         self.__str = asStr
 
         if asStr.endswith('/'):
-            self.cType = 'directory'
+            self._cType = 'directory'
         else:
-            self.cType = 'file'
+            self._cType = 'file'
         if asStr.startswith('/'):
-            self.sroot = True
+            self._sroot = True
         else:
-            self.sroot = False
+            self._sroot = False
 
     def remove_empty_from_list(self, l: list[str]) -> list[str]:
         '''This does just do what it says it also implements some simple sanitization'''
@@ -80,14 +85,17 @@ class Path:
 
         return Path(cpath)
     
-    def prepend(self, prepath: Path):
-        '''Prepends another Path to this Path'''
+    def prepend(self, prepath: Path, modify_self: bool = True):
+        '''Prepends another Path to this Path and returns the new Path'''
         if not prepath.cType == 'directory':
             raise ValueError('Prepath should be a directory')
         
         new = Path(str(prepath) + self.__str)
-        self.__str = str(new)
-        self.__list = list(new)
+        if modify_self:
+            self.__str = str(new)
+            self.__list = list(new)
+
+        return new
 
 
     def __list__(self): return self.__list
@@ -98,36 +106,53 @@ class Path:
 
     def __str__(self): return self.__str
 
+    @property
+    def cType(self): return self._cType
+    @property
+    def sroot(self): return self._sroot
+
 
 class File:
     '''Contains metadata (`name` and `path`) and the content. (`content`)'''
     name: str
-    path: str
     contents: bytes
+    exists: bool
 
     def __init__(self, path: Path, contents: bytes|None=None):
         name = path[-1]
-        print(name)
         if any(x in name for x in INVALID_FILE_CHARS):
             raise InvalidFilenameError
+        
         self.name = name
         self.contents = contents if contents is not None else ''.encode()
+        self.exists = True
 
 
     def write(self, contents: bytes, append=False) -> None:
         '''Write `contents` to this file. If `append`, it will append the contents instead of
         rewriting the whole thing'''
+        self.raiseErrorIfNotExists()
+
         if not append:
             self.contents = contents
             return
         self.contents += contents
 
     def read(self) -> bytes:
+        self.raiseErrorIfNotExists()
         return self.contents
     
     def readAsString(self) -> str:
-        encoding = chardet.detect(self.contents)['encoding']
-        return self.contents.decode(encoding)
+        self.raiseErrorIfNotExists()
+        return self.contents.decode()
+
+    def raiseErrorIfNotExists(self):
+        if not self.exists: raise FileNotFoundError(self.name)
+    
+    def delete(self):
+        '''Deletes the File'''
+        self.contents = None
+        self.exists = False
     
     def __str__(self) -> str:
         return self.name
@@ -141,8 +166,7 @@ class Directory:
     children: list[File|Directory]
 
     def __init__(self, path: Path|str):
-        if isinstance(path, str):
-            path = Path(path)
+        path = str_path(path)
 
         self.path = path
         self.name = path[-1]
@@ -167,8 +191,7 @@ class Directory:
     
     def create_dir(self, path: Path|str):
         '''Creates a directory'''
-        if not isinstance(path, Path):
-            path = Path(path)
+        path = str_path(path)
         
         name = path[-1]
 
@@ -182,13 +205,48 @@ class Directory:
         self.children.append(ndir)
         return ndir
     
+    def create(self, path: Path|str, contents: bytes|None = None, strict=True):
+        '''Creates a File|Directory by inferring the type from the path\n
+        `strict`: Whether to raise an error if you pass in contents while the path is a directory.
+        If false method also raises an error if the path is invalid'''
+        path = str_path(path)
+
+        if path.cType == 'directory' and contents is not None and strict:
+            raise ValueError("Don't pass in contents if the path type is directory")
+        
+        if path.cType == 'directory':
+            self.create_dir(path)
+            return
+        elif path.cType == 'file':
+            self.create_file(path[-1], contents)
+            return
+
+
     def exists(self, name: str) -> bool:
-        '''Does this File or Directory exist?'''
+        '''Does `name` File or Directory exist?'''
         return name in [n.name for n in self.children]
 
-    def get(self, name: str) -> File|Directory|None:
-        '''Gets a File or Directory by name. If none found, returns None.'''
+    def get(self, name: str, quiet=False) -> File|Directory|None:
+        '''Gets a File or Directory by name. If none found and `quiet` is false, raises FileNotFound.
+        If none found and `quiet` is true, returns `None`.'''
         for p in self.children:
             if p.name == name:
                 return p
-        return None
+        if quiet:
+            return
+        else:
+            raise FileNotFoundError
+
+    def delete(self, name: str) -> None:
+        '''Deletes a File or Directory by name.'''
+        if not self.exists(name):
+            raise FileNotFoundError
+        
+        for i, t in enumerate(self.children):
+            if t.name == name:
+                # delete File from inside
+                ref = self.get(t.name)
+                ref.delete()
+                # delete from children list
+                del self.children[i]
+                break
