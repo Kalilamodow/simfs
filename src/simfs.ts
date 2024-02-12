@@ -31,7 +31,7 @@ class SimulatedFilesystem {
   public cd(path: Array<string>): boolean {
     // make sure new cwd exists
     let newPath = this.cwd_path;
-    path.forEach((x) => (newPath = pathlib.join(newPath, x)));
+    path.forEach(x => (newPath = pathlib.join(newPath, x)));
 
     const got = this.get_by_path(newPath);
 
@@ -43,7 +43,6 @@ class SimulatedFilesystem {
   }
 
   public cwd(): Directory {
-    console.log('cwding to ', this.cwd_path);
     const resource = this.get_by_path(this.cwd_path);
 
     return resource as Directory;
@@ -51,8 +50,11 @@ class SimulatedFilesystem {
 
   public get_by_path(resource_path: string): Resource | null {
     let dir = this.root;
-    const path = pathlib.normalize(resource_path).split(pathlib.sep).toSpliced(1);
-    
+    const path = pathlib
+      .normalize(resource_path)
+      .split(pathlib.sep)
+      .toSpliced(0, 1);
+
     if (JSON.stringify(path) == JSON.stringify([""])) return this.root;
 
     for (let i = 0; i < path.length; i++) {
@@ -72,7 +74,9 @@ class SimulatedFilesystem {
    * Saves this simulated filesystem as a binary-encoded file.
    * @returns `true` on success, `false` on error.
    */
-  public serialize(filename: string = "./simulated-filesystem.simfs"): boolean {
+  public serialize(
+    filename: string = "./simulated-filesystem.simfs",
+  ): boolean {
     const data = this.root.serialize();
 
     try {
@@ -95,10 +99,12 @@ class SimulatedFilesystem {
 
     if (!fs.existsSync(path)) fs.mkdirSync(path);
     else
-      console.warn("Directory already exists. Some files may be overwritten.");
+      console.warn(
+        "Directory already exists. Some files may be overwritten.",
+      );
 
     function searchDir() {
-      currentDir.contents.forEach((reso) => {
+      currentDir.contents.forEach(reso => {
         if (reso.type == "directory") {
           const dir = reso as Directory;
           pathlist.push(dir.name);
@@ -110,7 +116,7 @@ class SimulatedFilesystem {
           fs.appendFileSync(
             pathlist.join("/") + "/" + file.name,
             file.contents,
-            "utf-8"
+            "utf-8",
           );
         }
       });
@@ -123,7 +129,7 @@ class SimulatedFilesystem {
 
   /**
    * Creates a simulated directory from an actual directory.
-   * 
+   *
    * @param path The path to load from
    * @returns A `Directory` that simulates the provided directory path
    */
@@ -135,7 +141,7 @@ class SimulatedFilesystem {
       const dirpath = pathlib.normalize(dirpath_);
       const files = fs.readdirSync(dirpath);
 
-      files.forEach((filename) => {
+      files.forEach(filename => {
         const filepath = pathlib.join(dirpath, filename);
         const stats = fs.statSync(filepath);
 
