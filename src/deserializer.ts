@@ -1,5 +1,5 @@
 import { Directory, SFFile } from "./resources.js";
-import SimulatedFilesystem from "./simfs.js";
+import SimulatedFilesystem from "./index.js";
 
 enum Section {
   RES_TYPE,
@@ -56,7 +56,7 @@ function deserialize(serialized_bytes: Uint8Array) {
           left_in_name = undefined;
           print(
             byteindex,
-            "name length started at 0, jumping to content length immediately"
+            "name length started at 0, jumping to content length immediately",
           );
           section = Section.CONTENT_LENGTH;
           break;
@@ -78,7 +78,7 @@ function deserialize(serialized_bytes: Uint8Array) {
             byteindex,
             `left_in_name < i0, jumping to content length. name found: ${
               ctype == "file" ? cfile.name : cdir.name
-            }`
+            }`,
           );
           section = Section.CONTENT_LENGTH;
           break;
@@ -89,12 +89,15 @@ function deserialize(serialized_bytes: Uint8Array) {
         if (ctype == "file") {
           print(
             byteindex,
-            "found content length of file x" + byte.toString(16)
+            "found content length of file x" + byte.toString(16),
           );
           left_in_file_contents = byte;
         } else {
           left_in_dir_contents.push(byte);
-          print(byteindex, "found content length of dir x" + byte.toString(16));
+          print(
+            byteindex,
+            "found content length of dir x" + byte.toString(16),
+          );
           // because we have the directory now, we jump straight
           // to the header of the first file inside the directory
           section = Section.RES_TYPE;
@@ -104,7 +107,9 @@ function deserialize(serialized_bytes: Uint8Array) {
         section = Section.FILE_CONTENT;
         break;
       case Section.FILE_CONTENT:
-        cfile.write(new Uint8Array(Array.from(cfile.contents).concat([byte])));
+        cfile.write(
+          new Uint8Array(Array.from(cfile.contents).concat([byte])),
+        );
 
         left_in_file_contents--;
         left_in_dir_contents[left_in_dir_contents.length - 1]--;
@@ -114,13 +119,13 @@ function deserialize(serialized_bytes: Uint8Array) {
           print(
             byteindex,
             "left in file contents is 0, going to next file. text found: " +
-              cfile.read()
+              cfile.read(),
           );
 
           if (left_in_dir_contents[left_in_dir_contents.length - 1] <= 0) {
             print(
               byteindex,
-              "left_in_dir_contents is 0, jumping to next directory"
+              "left_in_dir_contents is 0, jumping to next directory",
             );
             left_in_dir_contents.pop();
             cdir = cdir.parentDir;

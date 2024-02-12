@@ -3,7 +3,7 @@ import * as readlineSync from "readline-sync";
 import deserialize from "./deserializer.js";
 import * as errors from "./errors.js";
 import { Directory } from "./resources.js";
-import SimulatedFilesystem from "./simfs.js";
+import SimulatedFilesystem from "./index.js";
 import * as pathlib from "path";
 
 enum HandledCommandReturn {
@@ -47,7 +47,9 @@ const handleCommand = (cmd: string): HandledCommandReturn => {
     const cwd = sfs.cwd();
     const filelist =
       cwd.get().length > 0
-        ? cwd.contents.map((x) => x.name + (x.type == "directory" ? "/" : ""))
+        ? cwd.contents.map(
+            x => x.name + (x.type == "directory" ? "/" : ""),
+          )
         : null;
 
     if (filelist) print(filelist.join("\n"));
@@ -63,7 +65,8 @@ const handleCommand = (cmd: string): HandledCommandReturn => {
     try {
       sfs.cwd().createFile(filename, contents);
     } catch (e) {
-      if (e instanceof errors.FileExists) print("error: file already exists");
+      if (e instanceof errors.FileExists)
+        print("error: file already exists");
       else print("error: unknown error");
     }
   } else if (cmd.startsWith(Commands.CREATE_DIR)) {
@@ -133,15 +136,15 @@ commands:
     if (cmd.includes("--string")) {
       print(
         Array.from(file.serialize())
-          .map((x) => String.fromCharCode(x))
-          .join("")
+          .map(x => String.fromCharCode(x))
+          .join(""),
       );
     } else if (cmd.includes("--debug")) {
       print(file.serialize().join("\t"));
       print(
         Array.from(file.serialize())
-          .map((x) => String.fromCharCode(x))
-          .join("\t")
+          .map(x => String.fromCharCode(x))
+          .join("\t"),
       );
     } else {
       print(file.serialize().join(" "));
@@ -167,18 +170,20 @@ commands:
  */
 const startShell = (
   start?: Directory | Uint8Array | SimulatedFilesystem,
-  print_hello = true
+  print_hello = true,
 ) => {
   if (start instanceof SimulatedFilesystem) sfs = start;
   else sfs = new SimulatedFilesystem(start);
 
   if (print_hello)
-    print("welcome to the simfs shell! type 'help' for a list of commands.");
+    print(
+      "welcome to the simfs shell! type 'help' for a list of commands.",
+    );
 
   // main loop
   for (;;) {
     const command = input(
-      `(${pathlib.normalize(sfs.cwd_path).replaceAll("\\", "/")})> `
+      `(${pathlib.normalize(sfs.cwd_path).replaceAll("\\", "/")})> `,
     );
     const res = handleCommand(command);
 

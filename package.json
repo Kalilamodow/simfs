@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "main": "src/simfs.ts",
+  "main": "src/index.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",

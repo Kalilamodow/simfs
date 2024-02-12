@@ -1,7 +1,7 @@
 /**
  * Tests reading from/writing to the physical filesystem
  */
-import SimulatedFilesystem from "../simfs.js";
+import SimulatedFilesystem from "../index.js";
 import startShell from "../shell.js";
 
 const OPTIONS = {
