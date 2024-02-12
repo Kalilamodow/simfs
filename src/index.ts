@@ -163,3 +163,4 @@ class SimulatedFilesystem {
 }
 
 export default SimulatedFilesystem;
+export { Directory, SFFile };
