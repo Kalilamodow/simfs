@@ -6,5 +6,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "moduleResolution": "node",
-  }
+    "declaration": true
+  },
+  "include": ["src"]
 }
