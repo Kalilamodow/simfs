@@ -1,5 +1,5 @@
 {
-  "name": "simfs",
+  "name": "simulated-filesystem",
   "type": "module",
   "version": "1.0.0",
   "description": "",
