@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import { compress } from "lz-string";
 import deserialize from "./deserializer.js";
 import { Directory, Resource, SFFile } from "./resources.js";
 // import as pathlib because the variable "path" is used a lot in function arguments
@@ -16,8 +16,8 @@ class SimulatedFilesystem {
    * you have a serialized Uint8Array, you can use that instead as well. If you want to provide
    * a path to load from, use a string.
    */
-  constructor(from?: Directory | Uint8Array) {
-    if (from instanceof Uint8Array) from = deserialize(from).root;
+  constructor(from?: Directory | string) {
+    if (typeof from == 'string') from = deserialize(from).root;
 
     this.root = from || new Directory("");
     console.log(this.root.name);
@@ -70,22 +70,14 @@ class SimulatedFilesystem {
   }
 
   /**
-   * Saves this simulated filesystem as a binary-encoded file.
-   * @returns `true` on success, `false` on error.
+   * Saves this simfs to binary, then compresses it
+   * @returns The compressed simfs
    */
-  public serialize(
-    filename: string = "./simulated-filesystem.simfs",
-  ): boolean {
-    const data = this.root.serialize();
+  public serialize(): string {
+    const data = this.root.serialize().join(',');
+    const compressed = compress(data);
 
-    try {
-      fs.writeFileSync(filename, data);
-    } catch (e) {
-      console.log("Could not write to file: ", e);
-      return false;
-    }
-
-    return true;
+    return compressed;
   }
 }
 

@@ -1,5 +1,6 @@
 import { Directory, SFFile } from "./resources.js";
 import SimulatedFilesystem from "./index.js";
+import { decompress } from "lz-string";
 
 enum Section {
   RES_TYPE,
@@ -13,7 +14,7 @@ function print(index: number, ...m: any) {
   console.log("x" + index.toString(16).padStart(2, "0"), "\t", ...m);
 }
 
-function deserialize(serialized_bytes: Uint8Array) {
+function deserialize(serialized: string) {
   const rootDir = new Directory("", undefined);
   let cdir: Directory;
   let cfile: SFFile;
@@ -24,6 +25,8 @@ function deserialize(serialized_bytes: Uint8Array) {
   let left_in_file_contents: number;
   let left_in_name: number;
   let section = Section.RES_TYPE;
+
+  const serialized_bytes = decompress(serialized).split(',').map(x => parseInt(x));
 
   serialized_bytes.forEach((byte_, byteindex) => {
     const byte = byte_;
