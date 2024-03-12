@@ -1,8 +1,8 @@
 /**
  * Tests reading from/writing to the physical filesystem
  */
-import SimulatedFilesystem from "../index.js";
-import startShell from "../shell.js";
+import SimulatedFilesystem from "../src/index.js";
+import startShell from "../src/shell.js";
 
 const OPTIONS = {
   test_create: false,

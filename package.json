@@ -2,10 +2,8 @@
   "name": "simfs",
   "type": "module",
   "version": "1.0.0",
-  "description": "",
   "main": "src/index.ts",
-  "keywords": [],
-  "author": "",
+  "author": "kalilamodow",
   "license": "ISC",
   "scripts": {
     "build": "tsc",
@@ -13,7 +11,10 @@
     "test": "tsc && cls && node dist/test.js"
   },
   "dependencies": {
+    "@types/node": "^20.11.25",
     "@types/readline-sync": "^1.4.8",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
     "readline-sync": "^1.4.10"
   },
   "devDependencies": {
