@@ -51,8 +51,12 @@ function save(simfs: SimulatedFilesystem, path: string = "./") {
 
     searchDir();
 }
-
+```
+```javascript
 // loading a simfs from the filesystem
+import * as pathlib from 'path';
+import * as fs from 'fs';
+
 function load(path: string) {
     const loaded = new Directory("");
     let cdir = loaded;
