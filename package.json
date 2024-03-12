@@ -11,14 +11,15 @@
     "test": "tsc && cls && node dist/test.js"
   },
   "dependencies": {
-    "@types/node": "^20.11.25",
-    "@types/readline-sync": "^1.4.8",
-    "fs": "^0.0.1-security",
-    "path": "^0.12.7",
-    "readline-sync": "^1.4.10"
+    "path-browserify": "^1.0.1"
   },
   "devDependencies": {
+    "@types/node": "^20.11.25",
+    "@types/path-browserify": "^1.0.2",
+    "@types/readline-sync": "^1.4.8",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0"
+    "@typescript-eslint/parser": "^6.21.0",
+    "readline-sync": "^1.4.10",
+    "typescript": "^5.4.2"
   }
 }

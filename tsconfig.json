@@ -3,10 +3,13 @@
     "target": "ESNext",
     "module": "ESNext",
     "esModuleInterop": true,
-    "rootDir": "src",
     "outDir": "dist",
     "moduleResolution": "node",
-    "declaration": true
+    "declaration": true,
+    "lib": [
+      "ESNext",
+      "ES2021"
+    ]
   },
   "include": ["src"]
 }

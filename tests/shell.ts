@@ -1,9 +1,10 @@
 import { clear as clear_console } from "console";
+import * as fs from 'fs';
+import * as pathlib from "path";
 import * as readlineSync from "readline-sync";
 import * as errors from "../src/errors.js";
-import { Directory } from "../src/resources.js";
 import SimulatedFilesystem from "../src/index.js";
-import * as pathlib from "path";
+import { Directory, SFFile } from "../src/resources.js";
 
 enum HandledCommandReturn {
   CONTINUE,
@@ -29,6 +30,41 @@ enum Commands {
   HELP = "help",
   BYTEREPR = "serialize",
   SAVE = "disksave",
+}
+
+function saveSimfs(simfs: SimulatedFilesystem, path: string = "./") {
+  let currentDir = simfs.root;
+  const pathlist: Array<string> = [path.replace(/\/$/, "")];
+
+  if (!fs.existsSync(path)) fs.mkdirSync(path);
+  else
+    console.warn(
+      "Directory already exists. Some files may be overwritten.",
+    );
+
+  function searchDir() {
+    currentDir.contents.forEach(reso => {
+
+      if (reso.type == "directory") {
+        const dir = reso as Directory;
+        pathlist.push(dir.name);
+        fs.mkdirSync(pathlist.join("/"));
+        currentDir = dir;
+        searchDir();
+      } else if (reso.type == "file") {
+        const file = reso as SFFile;
+        fs.appendFileSync(
+          pathlist.join("/") + "/" + file.name,
+          file.contents,
+          "utf-8",
+        );
+      }
+    });
+
+    if (currentDir.parentDir) currentDir = currentDir.parentDir;
+  }
+
+  searchDir();
 }
 
 /**
@@ -153,7 +189,7 @@ commands:
     const should = input("Are you sure? (y/N)\n> ");
     if (should.toLowerCase() == "y") {
       const path = input("Path:\n> ");
-      sfs.save(path);
+      saveSimfs(sfs, path);
     }
   }
 
