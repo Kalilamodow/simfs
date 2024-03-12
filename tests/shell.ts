@@ -1,9 +1,8 @@
 import { clear as clear_console } from "console";
 import * as readlineSync from "readline-sync";
-import deserialize from "./deserializer.js";
-import * as errors from "./errors.js";
-import { Directory } from "./resources.js";
-import SimulatedFilesystem from "./index.js";
+import * as errors from "../src/errors.js";
+import { Directory } from "../src/resources.js";
+import SimulatedFilesystem from "../src/index.js";
 import * as pathlib from "path";
 
 enum HandledCommandReturn {
@@ -48,8 +47,8 @@ const handleCommand = (cmd: string): HandledCommandReturn => {
     const filelist =
       cwd.get().length > 0
         ? cwd.contents.map(
-            x => x.name + (x.type == "directory" ? "/" : ""),
-          )
+          x => x.name + (x.type == "directory" ? "/" : ""),
+        )
         : null;
 
     if (filelist) print(filelist.join("\n"));
@@ -98,12 +97,13 @@ const handleCommand = (cmd: string): HandledCommandReturn => {
     const filename = cmd.split(" ")[1];
     const contents = cmd.split(" ").slice(2).join(" ");
 
-    if (!sfs.cwd().get(filename)) {
+    const file = sfs.cwd().get(filename);
+
+    if (!file) {
       print("File not found");
       return HandledCommandReturn.CONTINUE;
     }
 
-    const file = sfs.cwd().get(filename);
     if (file.type != "file") {
       print("error: not a file");
     } else {
@@ -181,7 +181,7 @@ const startShell = (
     );
 
   // main loop
-  for (;;) {
+  for (; ;) {
     const command = input(
       `(${pathlib.normalize(sfs.cwd_path).replaceAll("\\", "/")})> `,
     );
