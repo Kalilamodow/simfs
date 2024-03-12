@@ -10,7 +10,7 @@ declare class SimulatedFilesystem {
      * you have a serialized Uint8Array, you can use that instead as well. If you want to provide
      * a path to load from, use a string.
      */
-    constructor(from?: Directory | Uint8Array | string);
+    constructor(from?: Directory | string);
     /** Modifies current working directory (`this.cwd`).
      *
      * @returns `true` on success, otherwise `false` (if the directory doesn't exist, or it's a file). */
@@ -18,22 +18,10 @@ declare class SimulatedFilesystem {
     cwd(): Directory;
     get_by_path(resource_path: string): Resource | null;
     /**
-     * Saves this simulated filesystem as a binary-encoded file.
-     * @returns `true` on success, `false` on error.
+     * Saves this simfs to binary, then compresses it
+     * @returns The compressed simfs
      */
-    serialize(filename?: string): boolean;
-    /**
-     * Saves this simulated filesystem to the filesystem.
-     * @param path The directory to put it in
-     */
-    save(path?: string): void;
-    /**
-     * Creates a simulated directory from an actual directory.
-     *
-     * @param path The path to load from
-     * @returns A `Directory` that simulates the provided directory path
-     */
-    static load(path: string): Directory;
+    serialize(): string;
 }
 export default SimulatedFilesystem;
 export { Directory, SFFile };

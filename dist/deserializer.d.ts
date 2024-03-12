@@ -1,3 +1,3 @@
 import SimulatedFilesystem from "./index.js";
-declare function deserialize(serialized_bytes: Uint8Array): SimulatedFilesystem;
+declare function deserialize(serialized: string): SimulatedFilesystem;
 export default deserialize;

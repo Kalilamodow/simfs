@@ -1,5 +1,6 @@
 import { Directory } from "./resources.js";
 import SimulatedFilesystem from "./index.js";
+import { decompress } from "lz-string";
 var Section;
 (function (Section) {
     Section[Section["RES_TYPE"] = 0] = "RES_TYPE";
@@ -11,7 +12,7 @@ var Section;
 function print(index, ...m) {
     console.log("x" + index.toString(16).padStart(2, "0"), "\t", ...m);
 }
-function deserialize(serialized_bytes) {
+function deserialize(serialized) {
     const rootDir = new Directory("", undefined);
     let cdir;
     let cfile;
@@ -20,6 +21,7 @@ function deserialize(serialized_bytes) {
     let left_in_file_contents;
     let left_in_name;
     let section = Section.RES_TYPE;
+    const serialized_bytes = decompress(serialized).split(',').map(x => parseInt(x));
     serialized_bytes.forEach((byte_, byteindex) => {
         const byte = byte_;
         switch (section) {

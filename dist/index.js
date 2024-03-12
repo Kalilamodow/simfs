@@ -1,8 +1,8 @@
-import * as fs from "fs";
-import { Directory, SFFile } from "./resources.js";
+import { compress } from "lz-string";
 import deserialize from "./deserializer.js";
+import { Directory, SFFile } from "./resources.js";
 // import as pathlib because the variable "path" is used a lot in function arguments
-import * as pathlib from "path";
+import pathlib from "path-browserify";
 class SimulatedFilesystem {
     /** The root directory of the filesystem. */
     root;
@@ -15,10 +15,8 @@ class SimulatedFilesystem {
      * a path to load from, use a string.
      */
     constructor(from) {
-        if (from instanceof Uint8Array)
+        if (typeof from == 'string')
             from = deserialize(from).root;
-        if (typeof from == "string")
-            from = SimulatedFilesystem.load(from);
         this.root = from || new Directory("");
         console.log(this.root.name);
         this.cwd_path = "/";
@@ -62,79 +60,13 @@ class SimulatedFilesystem {
         return dir;
     }
     /**
-     * Saves this simulated filesystem as a binary-encoded file.
-     * @returns `true` on success, `false` on error.
+     * Saves this simfs to binary, then compresses it
+     * @returns The compressed simfs
      */
-    serialize(filename = "./simulated-filesystem.simfs") {
-        const data = this.root.serialize();
-        try {
-            fs.writeFileSync(filename, data);
-        }
-        catch (e) {
-            console.log("Could not write to file: ", e);
-            return false;
-        }
-        return true;
-    }
-    /**
-     * Saves this simulated filesystem to the filesystem.
-     * @param path The directory to put it in
-     */
-    save(path = "./") {
-        let currentDir = this.root;
-        const pathlist = [path.replace(/\/$/, "")];
-        if (!fs.existsSync(path))
-            fs.mkdirSync(path);
-        else
-            console.warn("Directory already exists. Some files may be overwritten.");
-        function searchDir() {
-            currentDir.contents.forEach(reso => {
-                if (reso.type == "directory") {
-                    const dir = reso;
-                    pathlist.push(dir.name);
-                    fs.mkdirSync(pathlist.join("/"));
-                    currentDir = dir;
-                    searchDir();
-                }
-                else if (reso.type == "file") {
-                    const file = reso;
-                    fs.appendFileSync(pathlist.join("/") + "/" + file.name, file.contents, "utf-8");
-                }
-            });
-            if (currentDir.parentDir)
-                currentDir = currentDir.parentDir;
-        }
-        searchDir();
-    }
-    /**
-     * Creates a simulated directory from an actual directory.
-     *
-     * @param path The path to load from
-     * @returns A `Directory` that simulates the provided directory path
-     */
-    static load(path) {
-        const loaded = new Directory("");
-        let cdir = loaded;
-        function readDir(dirpath_) {
-            const dirpath = pathlib.normalize(dirpath_);
-            const files = fs.readdirSync(dirpath);
-            files.forEach(filename => {
-                const filepath = pathlib.join(dirpath, filename);
-                const stats = fs.statSync(filepath);
-                if (stats.isDirectory()) {
-                    cdir = cdir.createDirectory(filename);
-                    readDir(filepath);
-                }
-                else {
-                    const contents = fs.readFileSync(filepath);
-                    cdir.createFile(filename, new Uint8Array(contents));
-                }
-            });
-            if (cdir.parentDir)
-                cdir = cdir.parentDir;
-        }
-        readDir(path);
-        return loaded;
+    serialize() {
+        const data = this.root.serialize().join(',');
+        const compressed = compress(data);
+        return compressed;
     }
 }
 export default SimulatedFilesystem;
