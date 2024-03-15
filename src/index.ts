@@ -17,10 +17,9 @@ class SimulatedFilesystem {
    * a path to load from, use a string.
    */
   constructor(from?: Directory | string) {
-    if (typeof from == 'string') from = deserialize(from).root;
+    if (typeof from == "string") from = deserialize(from).root;
 
     this.root = from || new Directory("");
-    console.log(this.root.name);
     this.cwd_path = "/";
   }
 
@@ -74,7 +73,7 @@ class SimulatedFilesystem {
    * @returns The compressed simfs
    */
   public serialize(): string {
-    const data = this.root.serialize().join(',');
+    const data = this.root.serialize().join(",");
     const compressed = compress(data);
 
     return compressed;
