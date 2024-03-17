@@ -1,6 +1,6 @@
 import { compress } from "lz-string";
-import deserialize from "./deserializer.js";
-import { Directory, Resource, SFFile } from "./resources.js";
+import deserialize from "./deserializer";
+import { Directory, Resource, SFFile } from "./resources";
 // import as pathlib because the variable "path" is used a lot in function arguments
 import pathlib from "path-browserify";
 

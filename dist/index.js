@@ -1,6 +1,6 @@
 import { compress } from "lz-string";
-import deserialize from "./deserializer.js";
-import { Directory, SFFile } from "./resources.js";
+import deserialize from "./deserializer";
+import { Directory, SFFile } from "./resources";
 // import as pathlib because the variable "path" is used a lot in function arguments
 import pathlib from "path-browserify";
 class SimulatedFilesystem {
@@ -15,10 +15,9 @@ class SimulatedFilesystem {
      * a path to load from, use a string.
      */
     constructor(from) {
-        if (typeof from == 'string')
+        if (typeof from == "string")
             from = deserialize(from).root;
         this.root = from || new Directory("");
-        console.log(this.root.name);
         this.cwd_path = "/";
     }
     /** Modifies current working directory (`this.cwd`).
@@ -64,7 +63,7 @@ class SimulatedFilesystem {
      * @returns The compressed simfs
      */
     serialize() {
-        const data = this.root.serialize().join(',');
+        const data = this.root.serialize().join(",");
         const compressed = compress(data);
         return compressed;
     }

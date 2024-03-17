@@ -1,4 +1,4 @@
-import * as errors from "./errors.js";
+import * as errors from "./errors";
 class SFFile {
     name;
     parentDir;
@@ -14,7 +14,7 @@ class SFFile {
     constructor(name, contents, parentDir) {
         this.name = name;
         if (typeof contents == "string") {
-            contents = new Uint8Array(contents.split("").map((c) => c.charCodeAt(0)));
+            contents = new Uint8Array(contents.split("").map(c => c.charCodeAt(0)));
         }
         this.contents = contents || new Uint8Array();
         this.parentDir = parentDir;
@@ -30,7 +30,7 @@ class SFFile {
     write(newContents) {
         this.contents =
             typeof newContents == "string"
-                ? new Uint8Array(newContents.split("").map((c) => c.charCodeAt(0)))
+                ? new Uint8Array(newContents.split("").map(c => c.charCodeAt(0)))
                 : newContents;
     }
     /** This file's contents, as a string */
@@ -50,7 +50,7 @@ class SFFile {
      */
     static serialize(file) {
         const name_length = file.name.length;
-        const name_bytes = file.name.split("").map((char) => char.charCodeAt(0));
+        const name_bytes = file.name.split("").map(char => char.charCodeAt(0));
         // note: the 1 is to tell the deserializer that this is a file. if it were a directory, it would be a 2.
         return new Uint8Array([1]
             .concat([name_length])
@@ -76,7 +76,7 @@ class Directory {
     }
     /** Deletes a resource that's inside this directory */
     delete(cname) {
-        const newContents = this.contents.filter((e) => e.name != cname);
+        const newContents = this.contents.filter(e => e.name != cname);
         if (newContents === this.contents)
             throw new errors.ResourceNotFound();
         this.contents = newContents;
@@ -89,7 +89,7 @@ class Directory {
     }
     /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */
     addFile(file, autoParentDir = true) {
-        if (this.contents.map((x) => x.name).includes(file.name))
+        if (this.contents.map(x => x.name).includes(file.name))
             throw new errors.FileExists("Cannot add file, as it already exists");
         if (autoParentDir) {
             file.parentDir = this;
@@ -112,7 +112,7 @@ class Directory {
     get(name, predefinedType) {
         if (!name)
             return this.contents;
-        const res = this.contents.find((e) => e.name == name);
+        const res = this.contents.find(e => e.name == name);
         if (!res)
             return null;
         if (predefinedType) {
@@ -149,10 +149,10 @@ class Directory {
         res.push(dirname_len_byte);
         const dirname_bytes = directory.name
             .split("")
-            .map((char) => char.charCodeAt(0));
+            .map(char => char.charCodeAt(0));
         res.push(...dirname_bytes);
         const content_bytes = [];
-        directory.contents.forEach((resource) => {
+        directory.contents.forEach(resource => {
             const serializedResource = resource.serialize();
             content_bytes.push(...serializedResource);
         });

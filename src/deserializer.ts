@@ -1,5 +1,5 @@
-import { Directory, SFFile } from "./resources.js";
-import SimulatedFilesystem from "./index.js";
+import { Directory, SFFile } from "./resources";
+import SimulatedFilesystem from ".";
 import { decompress } from "lz-string";
 
 enum Section {
@@ -26,7 +26,9 @@ function deserialize(serialized: string) {
   let left_in_name: number;
   let section = Section.RES_TYPE;
 
-  const serialized_bytes = decompress(serialized).split(',').map(x => parseInt(x));
+  const serialized_bytes = decompress(serialized)
+    .split(",")
+    .map(x => parseInt(x));
 
   serialized_bytes.forEach((byte_, byteindex) => {
     const byte = byte_;

@@ -1,4 +1,4 @@
-import { Directory, Resource, SFFile } from "./resources.js";
+import { Directory, Resource, SFFile } from "./resources";
 declare class SimulatedFilesystem {
     /** The root directory of the filesystem. */
     root: Directory;

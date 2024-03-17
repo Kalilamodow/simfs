@@ -1,4 +1,4 @@
-import * as errors from "./errors.js";
+import * as errors from "./errors";
 
 interface ResourceData {
   name: string;
@@ -27,10 +27,12 @@ class SFFile implements ResourceData {
   constructor(
     public name: string,
     contents?: string | Uint8Array,
-    parentDir?: Directory
+    parentDir?: Directory,
   ) {
     if (typeof contents == "string") {
-      contents = new Uint8Array(contents.split("").map((c) => c.charCodeAt(0)));
+      contents = new Uint8Array(
+        contents.split("").map(c => c.charCodeAt(0)),
+      );
     }
 
     this.contents = contents || new Uint8Array();
@@ -40,14 +42,17 @@ class SFFile implements ResourceData {
   /** Deletes this file from its parent directory */
   public delete() {
     if (this.parentDir) this.parentDir.delete(this.name);
-    else throw new errors.CannotDelete("No parent provided when creating file");
+    else
+      throw new errors.CannotDelete(
+        "No parent provided when creating file",
+      );
   }
 
   /** Write a string or Uint8Array to this file */
   public write(newContents: string | Uint8Array) {
     this.contents =
       typeof newContents == "string"
-        ? new Uint8Array(newContents.split("").map((c) => c.charCodeAt(0)))
+        ? new Uint8Array(newContents.split("").map(c => c.charCodeAt(0)))
         : newContents;
   }
 
@@ -70,14 +75,14 @@ class SFFile implements ResourceData {
    */
   public static serialize(file: SFFile) {
     const name_length = file.name.length;
-    const name_bytes = file.name.split("").map((char) => char.charCodeAt(0));
+    const name_bytes = file.name.split("").map(char => char.charCodeAt(0));
     // note: the 1 is to tell the deserializer that this is a file. if it were a directory, it would be a 2.
     return new Uint8Array(
       [1]
         .concat([name_length])
         .concat(name_bytes)
         .concat([file.contents.byteLength])
-        .concat(Array.from(file.contents))
+        .concat(Array.from(file.contents)),
     );
   }
 }
@@ -102,7 +107,7 @@ class Directory implements ResourceData {
 
   /** Deletes a resource that's inside this directory */
   public delete(cname: string) {
-    const newContents = this.contents.filter((e) => e.name != cname);
+    const newContents = this.contents.filter(e => e.name != cname);
     if (newContents === this.contents) throw new errors.ResourceNotFound();
     this.contents = newContents;
   }
@@ -110,14 +115,16 @@ class Directory implements ResourceData {
   /** Deletes this directory from its parent */
   public deleteSelf() {
     if (!this.parentDir)
-      throw new errors.CannotDelete("No parent provided, or root directory");
+      throw new errors.CannotDelete(
+        "No parent provided, or root directory",
+      );
 
     this.parentDir.delete(this.name);
   }
 
   /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */
   public addFile(file: SFFile, autoParentDir: boolean = true): SFFile {
-    if (this.contents.map((x) => x.name).includes(file.name))
+    if (this.contents.map(x => x.name).includes(file.name))
       throw new errors.FileExists("Cannot add file, as it already exists");
 
     if (autoParentDir) {
@@ -161,7 +168,7 @@ class Directory implements ResourceData {
   public get(name?: string, predefinedType?: "file" | "directory") {
     if (!name) return this.contents;
 
-    const res = this.contents.find((e) => e.name == name);
+    const res = this.contents.find(e => e.name == name);
     if (!res) return null;
 
     if (predefinedType) {
@@ -205,12 +212,12 @@ class Directory implements ResourceData {
     res.push(dirname_len_byte);
     const dirname_bytes = directory.name
       .split("")
-      .map((char) => char.charCodeAt(0));
+      .map(char => char.charCodeAt(0));
     res.push(...dirname_bytes);
 
     const content_bytes: Array<number> = [];
 
-    directory.contents.forEach((resource) => {
+    directory.contents.forEach(resource => {
       const serializedResource = resource.serialize();
 
       content_bytes.push(...serializedResource);

@@ -1,3 +1,3 @@
-import SimulatedFilesystem from "./index.js";
+import SimulatedFilesystem from ".";
 declare function deserialize(serialized: string): SimulatedFilesystem;
 export default deserialize;
