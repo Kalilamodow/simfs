@@ -1,10 +1,15 @@
 {
   "name": "simfs",
   "type": "module",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "src/index.ts",
   "author": "kalilamodow",
-  "license": "ISC",
+  "license": "UNLICENSED",
+  "private": false,
+  "repository": {
+    "type": "url",
+    "url": "https://github.com/Kalilamodow/simfs-node"
+  },
   "scripts": {
     "build": "rm -rf dist && tsc"
   },
