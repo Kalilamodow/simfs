@@ -1,5 +1,8 @@
 import * as errors from "./errors";
 
+/**
+ * Base data for anything that will be in the simfs
+ */
 interface ResourceData {
   name: string;
   contents: any;
@@ -12,6 +15,8 @@ type Resource = SFFile | Directory;
 
 type ResourceList = Array<Resource>;
 
+// Called SFFile because "File" is already a
+// class in Javascript
 class SFFile implements ResourceData {
   public parentDir: Directory | undefined;
   /** This file's contents. Use read() to get it as a string */
@@ -19,7 +24,8 @@ class SFFile implements ResourceData {
   public readonly type: "file" = "file";
 
   /**
-   * Note: You shouldn't really ever need to initialize this class. Instead, use the
+   * The file class for a simfs. Just a name and some contents.
+   * You shouldn't really ever need to initialize this class. Instead, use the
    * `createFile` method on the parent directory.
    * @param name The name of this file
    * @param contents The contents of this file
@@ -62,7 +68,8 @@ class SFFile implements ResourceData {
   }
 
   /**
-   * Performs the serialization on itself
+   * Returns the serialized representation of this SFFile
+   * as a UInt8Array.
    */
   public serialize() {
     return SFFile.serialize(this);
@@ -96,7 +103,7 @@ class Directory implements ResourceData {
   /**
    * Resource used for containing more resources
    * @param name The name of this Directory
-   * @param parentDir The parent directory of this directory
+   * @param parentDir The parent Directory of this Directory
    */
   constructor(name: string, parentDir?: Directory) {
     this.name = name;
@@ -105,7 +112,7 @@ class Directory implements ResourceData {
     this.contents = [];
   }
 
-  /** Deletes a resource that's inside this directory */
+  /** Deletes a direct child of this directory */
   public delete(cname: string) {
     const newContents = this.contents.filter(e => e.name != cname);
     if (newContents === this.contents) throw new errors.ResourceNotFound();
@@ -135,14 +142,14 @@ class Directory implements ResourceData {
     return file;
   }
 
-  /** Creates a file and adds it */
+  /** Creates a file as a subresource of this Directory */
   public createFile(name: string, contents?: string | Uint8Array): SFFile {
     const file = new SFFile(name, contents, this);
     this.addFile(file);
     return file;
   }
 
-  /** Creates a directory and adds it */
+  /** Creates a directory as a subresource of this Directory */
   public createDirectory(name: string): Directory {
     const dir = new Directory(name, this);
     this.contents.push(dir);
@@ -155,14 +162,23 @@ class Directory implements ResourceData {
    */
   get(): ResourceList;
   /**
-   * Gets a specific resource by name. Already know the type, and sure it exists?
-   * Add another argument with the type ("file" or "directory"), and get the type hinting.
+   * Gets a specific resource by name. If you are 100% sure of the type,
+   * add another argument with the type ("file" or "directory") to prevent
+   * any type checking errors.
    * @param name The name of the resource
    */
   get(name: string): Resource | null;
-  /** Gets a file by name. */
+  /**
+   * Gets a SFFile by its name. If the resource is not
+   * an SFFile, an error will be thrown.
+   * @returns The File if it exists or null.
+   */
   get(name: string, predefinedType: "file"): SFFile | null;
-  /** Gets a directory by name. */
+  /**
+   * Gets a Directory by its name. If the resource is not
+   * a Directory, an error will be thrown.
+   * @returns The Directory if it exists or null.
+   */
   get(name: string, predefinedType: "directory"): Directory | null;
 
   public get(name?: string, predefinedType?: "file" | "directory") {
@@ -186,8 +202,8 @@ class Directory implements ResourceData {
   }
 
   /**
-   * Serialized version of this directory
-   * @returns Serialized representation of itself
+   * Returns the serialized representation of this Directory
+   * as a UInt8Array.
    */
   public serialize() {
     return Directory.serialize(this);
@@ -199,7 +215,7 @@ class Directory implements ResourceData {
    * Spec:
    * `[2, {directory name length byte}, {directory name bytes},
    * {serialized files or directories inside this directory}]`
-   * @param {Directroy} directory The directory to serialize
+   * @param {Directory} directory The directory to serialize
    * @returns A `Uint8Array`, continaing the serialized data
    */
   public static serialize(directory: Directory): Uint8Array {

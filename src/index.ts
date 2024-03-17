@@ -7,14 +7,13 @@ import pathlib from "path-browserify";
 class SimulatedFilesystem {
   /** The root directory of the filesystem. */
   public root: Directory;
-  /** Utility object representing the current working directory. */
+  /** Utility string representing the current working directory. */
   public cwd_path: string;
 
   /**
    * The main Simulated Filesystem class.
-   * @param from (optional) If you already have a directory, you can use it as the root. If
-   * you have a serialized Uint8Array, you can use that instead as well. If you want to provide
-   * a path to load from, use a string.
+   * @param from (optional) If you already have a Directory, you can use it as the root. If
+   * you have a serialized string, you can use that instead as well.
    */
   constructor(from?: Directory | string) {
     if (typeof from == "string") from = deserialize(from).root;
@@ -40,12 +39,21 @@ class SimulatedFilesystem {
     return true;
   }
 
+  /**
+   * Gets the current working directory as a Directory object
+   * @returns The current working directory as a Directory
+   */
   public cwd(): Directory {
     const resource = this.get_by_path(this.cwd_path);
 
     return resource as Directory;
   }
 
+  /**
+   * Gets a resource by its path.
+   * @param resource_path The resource path.
+   * @returns A Resource object or null if it doesn't exist
+   */
   public get_by_path(resource_path: string): Resource | null {
     let dir = this.root;
     const path = pathlib
@@ -69,8 +77,28 @@ class SimulatedFilesystem {
   }
 
   /**
-   * Saves this simfs to binary, then compresses it
-   * @returns The compressed simfs
+   * Serializes this SimulatedFilesystem to a bytestring, compressed
+   * with lz-string.
+   *
+   * @returns The serialized SimulatedFilesystem
+   *
+   * @example ```ts
+   * // serializing it
+   * import SimulatedFilesystem from 'simfs';
+   *
+   * const sfs = new SimulatedFilesystem(); // create the simfs
+   * const serialized = sfs.serialize(); // serialize it
+   * console.log(serialized); // probably some weird bytes
+   *
+   * // deserializing it
+   * import deserialize from 'simfs/deserializer';
+   * const deserialized = deserialize(serialized); // deserialize it
+   *
+   *
+   * // these should output the same thing:
+   * console.log(sfs);
+   * console.log(deserialized);
+   * ```
    */
   public serialize(): string {
     const data = this.root.serialize().join(",");
