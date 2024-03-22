@@ -80,6 +80,7 @@ class SimulatedFilesystem {
    * Serializes this SimulatedFilesystem to a bytestring, compressed
    * with lz-string.
    *
+   * @param doCompress (true) Whether to compress the data or not
    * @returns The serialized SimulatedFilesystem
    *
    * @example ```ts
@@ -100,11 +101,14 @@ class SimulatedFilesystem {
    * console.log(deserialized);
    * ```
    */
-  public serialize(): string {
+  public serialize(doCompress = true): string | Uint8Array {
     const data = this.root.serialize().join(",");
-    const compressed = compress(data);
 
-    return compressed;
+    if (doCompress) {
+      return compress(data);
+    } else {
+      return new Uint8Array(data.split(",").map(x => parseInt(x)));
+    }
   }
 }
 

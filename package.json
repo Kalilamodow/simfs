@@ -1,7 +1,7 @@
 {
   "name": "simfs",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "src/index.ts",
   "author": "kalilamodow",
   "license": "UNLICENSED",
@@ -11,7 +11,8 @@
     "url": "https://github.com/Kalilamodow/simfs-node"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc"
+    "build": "rm -rf dist && tsc",
+    "test": "jest"
   },
   "dependencies": {
     "lz-string": "^1.5.0",
