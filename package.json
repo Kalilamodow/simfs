@@ -1,8 +1,11 @@
 {
   "name": "simfs",
   "type": "module",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "author": "kalilamodow",
   "license": "UNLICENSED",
   "private": false,
