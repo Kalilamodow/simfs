@@ -1,6 +1,6 @@
 import { decompress } from "lz-string";
-import { Directory, SFFile } from "./resources";
 import SimulatedFilesystem from ".";
+import { Directory } from "./resources";
 
 const decodeString = (bytes: Uint8Array | number[]) =>
   Array.from(bytes)
