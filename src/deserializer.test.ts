@@ -6,11 +6,11 @@ describe("simfs serialization", () => {
   const sfs = new SimulatedFilesystem();
   const root = sfs.root;
 
-  root.createFile("test.txt", "hello world");
+  root.createFile("test.txt", "hello world".repeat(15));
   root.createFile("test 2.txt", "hello world number 2");
 
-  const dir = root.createDirectory("subdir");
-  dir.createFile("test 3.txt", "hello world number 3");
+  const dir = root.createDirectory("subdir".repeat(4));
+  dir.createFile("test 3.txt", "hello world number 3".repeat(10));
   dir.createFile("test 4.txt", "hello world number 4");
 
   const serialized = sfs.serialize();
