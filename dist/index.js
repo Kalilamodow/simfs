@@ -6,13 +6,12 @@ import pathlib from "path-browserify";
 class SimulatedFilesystem {
     /** The root directory of the filesystem. */
     root;
-    /** Utility object representing the current working directory. */
+    /** Utility string representing the current working directory. */
     cwd_path;
     /**
      * The main Simulated Filesystem class.
-     * @param from (optional) If you already have a directory, you can use it as the root. If
-     * you have a serialized Uint8Array, you can use that instead as well. If you want to provide
-     * a path to load from, use a string.
+     * @param from (optional) If you already have a Directory, you can use it as the root. If
+     * you have a serialized string, you can use that instead as well.
      */
     constructor(from) {
         if (typeof from == "string")
@@ -35,10 +34,19 @@ class SimulatedFilesystem {
         this.cwd_path = newPath;
         return true;
     }
+    /**
+     * Gets the current working directory as a Directory object
+     * @returns The current working directory as a Directory
+     */
     cwd() {
         const resource = this.get_by_path(this.cwd_path);
         return resource;
     }
+    /**
+     * Gets a resource by its path.
+     * @param resource_path The resource path.
+     * @returns A Resource object or null if it doesn't exist
+     */
     get_by_path(resource_path) {
         let dir = this.root;
         const path = pathlib
@@ -59,13 +67,38 @@ class SimulatedFilesystem {
         return dir;
     }
     /**
-     * Saves this simfs to binary, then compresses it
-     * @returns The compressed simfs
+     * Serializes this SimulatedFilesystem to a bytestring, compressed
+     * with lz-string.
+     *
+     * @param doCompress (true) Whether to compress the data or not
+     * @returns The serialized SimulatedFilesystem
+     *
+     * @example ```ts
+     * // serializing it
+     * import SimulatedFilesystem from 'simfs';
+     *
+     * const sfs = new SimulatedFilesystem(); // create the simfs
+     * const serialized = sfs.serialize(); // serialize it
+     * console.log(serialized); // probably some weird bytes
+     *
+     * // deserializing it
+     * import deserialize from 'simfs/deserializer';
+     * const deserialized = deserialize(serialized); // deserialize it
+     *
+     *
+     * // these should output the same thing:
+     * console.log(sfs);
+     * console.log(deserialized);
+     * ```
      */
-    serialize() {
+    serialize(doCompress = true) {
         const data = this.root.serialize().join(",");
-        const compressed = compress(data);
-        return compressed;
+        if (doCompress) {
+            return compress(data);
+        }
+        else {
+            return new Uint8Array(data.split(",").map(x => parseInt(x)));
+        }
     }
 }
 export default SimulatedFilesystem;

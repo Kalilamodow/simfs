@@ -1,3 +1,6 @@
+/**
+ * Base data for anything that will be in the simfs
+ */
 interface ResourceData {
     name: string;
     contents: any;
@@ -14,7 +17,8 @@ declare class SFFile implements ResourceData {
     contents: Uint8Array;
     readonly type: "file";
     /**
-     * Note: You shouldn't really ever need to initialize this class. Instead, use the
+     * The file class for a simfs. Just a name and some contents.
+     * You shouldn't really ever need to initialize this class. Instead, use the
      * `createFile` method on the parent directory.
      * @param name The name of this file
      * @param contents The contents of this file
@@ -27,7 +31,8 @@ declare class SFFile implements ResourceData {
     /** This file's contents, as a string */
     read(): string;
     /**
-     * Performs the serialization on itself
+     * Returns the serialized representation of this SFFile
+     * as a UInt8Array.
      */
     serialize(): Uint8Array;
     /**
@@ -45,18 +50,18 @@ declare class Directory implements ResourceData {
     /**
      * Resource used for containing more resources
      * @param name The name of this Directory
-     * @param parentDir The parent directory of this directory
+     * @param parentDir The parent Directory of this Directory
      */
     constructor(name: string, parentDir?: Directory);
-    /** Deletes a resource that's inside this directory */
+    /** Deletes a direct child of this directory */
     delete(cname: string): void;
     /** Deletes this directory from its parent */
     deleteSelf(): void;
     /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */
     addFile(file: SFFile, autoParentDir?: boolean): SFFile;
-    /** Creates a file and adds it */
+    /** Creates a file as a subresource of this Directory */
     createFile(name: string, contents?: string | Uint8Array): SFFile;
-    /** Creates a directory and adds it */
+    /** Creates a directory as a subresource of this Directory */
     createDirectory(name: string): Directory;
     /**
      * Get all resources in this directory.
@@ -64,18 +69,27 @@ declare class Directory implements ResourceData {
      */
     get(): ResourceList;
     /**
-     * Gets a specific resource by name. Already know the type, and sure it exists?
-     * Add another argument with the type ("file" or "directory"), and get the type hinting.
+     * Gets a specific resource by name. If you are 100% sure of the type,
+     * add another argument with the type ("file" or "directory") to prevent
+     * any type checking errors.
      * @param name The name of the resource
      */
     get(name: string): Resource | null;
-    /** Gets a file by name. */
+    /**
+     * Gets a SFFile by its name. If the resource is not
+     * an SFFile, an error will be thrown.
+     * @returns The File if it exists or null.
+     */
     get(name: string, predefinedType: "file"): SFFile | null;
-    /** Gets a directory by name. */
+    /**
+     * Gets a Directory by its name. If the resource is not
+     * a Directory, an error will be thrown.
+     * @returns The Directory if it exists or null.
+     */
     get(name: string, predefinedType: "directory"): Directory | null;
     /**
-     * Serialized version of this directory
-     * @returns Serialized representation of itself
+     * Returns the serialized representation of this Directory
+     * as a UInt8Array.
      */
     serialize(): Uint8Array;
     /**
@@ -84,7 +98,7 @@ declare class Directory implements ResourceData {
      * Spec:
      * `[2, {directory name length byte}, {directory name bytes},
      * {serialized files or directories inside this directory}]`
-     * @param {Directroy} directory The directory to serialize
+     * @param {Directory} directory The directory to serialize
      * @returns A `Uint8Array`, continaing the serialized data
      */
     static serialize(directory: Directory): Uint8Array;

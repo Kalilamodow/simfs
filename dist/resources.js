@@ -1,4 +1,6 @@
 import * as errors from "./errors";
+// Called SFFile because "File" is already a
+// class in Javascript
 class SFFile {
     name;
     parentDir;
@@ -6,7 +8,8 @@ class SFFile {
     contents;
     type = "file";
     /**
-     * Note: You shouldn't really ever need to initialize this class. Instead, use the
+     * The file class for a simfs. Just a name and some contents.
+     * You shouldn't really ever need to initialize this class. Instead, use the
      * `createFile` method on the parent directory.
      * @param name The name of this file
      * @param contents The contents of this file
@@ -38,7 +41,8 @@ class SFFile {
         return new TextDecoder().decode(this.contents);
     }
     /**
-     * Performs the serialization on itself
+     * Returns the serialized representation of this SFFile
+     * as a UInt8Array.
      */
     serialize() {
         return SFFile.serialize(this);
@@ -67,14 +71,14 @@ class Directory {
     /**
      * Resource used for containing more resources
      * @param name The name of this Directory
-     * @param parentDir The parent directory of this directory
+     * @param parentDir The parent Directory of this Directory
      */
     constructor(name, parentDir) {
         this.name = name;
         this.parentDir = parentDir;
         this.contents = [];
     }
-    /** Deletes a resource that's inside this directory */
+    /** Deletes a direct child of this directory */
     delete(cname) {
         const newContents = this.contents.filter(e => e.name != cname);
         if (newContents === this.contents)
@@ -97,13 +101,13 @@ class Directory {
         this.contents.push(file);
         return file;
     }
-    /** Creates a file and adds it */
+    /** Creates a file as a subresource of this Directory */
     createFile(name, contents) {
         const file = new SFFile(name, contents, this);
         this.addFile(file);
         return file;
     }
-    /** Creates a directory and adds it */
+    /** Creates a directory as a subresource of this Directory */
     createDirectory(name) {
         const dir = new Directory(name, this);
         this.contents.push(dir);
@@ -125,8 +129,8 @@ class Directory {
         return res;
     }
     /**
-     * Serialized version of this directory
-     * @returns Serialized representation of itself
+     * Returns the serialized representation of this Directory
+     * as a UInt8Array.
      */
     serialize() {
         return Directory.serialize(this);
@@ -137,7 +141,7 @@ class Directory {
      * Spec:
      * `[2, {directory name length byte}, {directory name bytes},
      * {serialized files or directories inside this directory}]`
-     * @param {Directroy} directory The directory to serialize
+     * @param {Directory} directory The directory to serialize
      * @returns A `Uint8Array`, continaing the serialized data
      */
     static serialize(directory) {

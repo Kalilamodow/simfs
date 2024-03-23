@@ -2,7 +2,7 @@
   "name": "simfs",
   "type": "module",
   "version": "0.1.3",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "author": "kalilamodow",
   "license": "UNLICENSED",
   "private": false,
