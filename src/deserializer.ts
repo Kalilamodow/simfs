@@ -13,7 +13,7 @@ const decodeString = (bytes: Uint8Array | number[]) =>
  * @param bytes Input bytes
  * @param parent The parent directory to modify.
  *
- * @returns The remaining bytes.
+ * @returns The length of the parsed directory
  */
 function parseDirectory(bytes_: Uint8Array, parent: Directory) {
   const bytes = Array.from(bytes_);
