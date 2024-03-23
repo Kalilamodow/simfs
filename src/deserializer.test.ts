@@ -1,16 +1,17 @@
 import SimulatedFilesystem from ".";
 import deserialize from "./deserializer";
+// import * as fs from "fs";
 
 describe("simfs serialization", () => {
   const sfs = new SimulatedFilesystem();
   const root = sfs.root;
 
   root.createFile("test.txt", "hello world");
-  root.createFile("second file.txt", "hello again");
+  root.createFile("test 2.txt", "hello world number 2");
 
-  const subdir = root.createDirectory("subdir");
-  subdir.createFile("subfile.txt", "hello from subdir");
-  subdir.createFile("subfile2.txt", "hello from subdir again");
+  const dir = root.createDirectory("subdir");
+  dir.createFile("test 3.txt", "hello world number 3");
+  dir.createFile("test 4.txt", "hello world number 4");
 
   const serialized = sfs.serialize();
   const serialized_nocompress = sfs.serialize(false);
@@ -19,13 +20,16 @@ describe("simfs serialization", () => {
     const deserialized = deserialize(serialized);
 
     expect(deserialized).toEqual(sfs);
-    console.log(deserialized);
   });
 
   it("can be deserialized without compression", () => {
     const deserialized = deserialize(serialized_nocompress);
 
     expect(deserialized).toEqual(sfs);
-    console.log(deserialized);
   });
+
+  // // write to file
+  // const writeStream = fs.createWriteStream("test.simfs_nc");
+  // writeStream.write(serialized_nocompress);
+  // writeStream.end();
 });

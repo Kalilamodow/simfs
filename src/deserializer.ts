@@ -1,13 +1,70 @@
+import { decompress } from "lz-string";
 import { Directory, SFFile } from "./resources";
 import SimulatedFilesystem from ".";
-import { decompress } from "lz-string";
 
-enum Section {
-  RES_TYPE,
-  NAME_LENGTH,
-  NAME,
-  CONTENT_LENGTH,
-  FILE_CONTENT,
+const decodeString = (bytes: Uint8Array | number[]) =>
+  Array.from(bytes)
+    .map(x => String.fromCharCode(x))
+    .join("");
+
+/**
+ * Takes some serialized bytes as input (should be of a directory), deserializes them,
+ * then modifies the parent directory accordingly.
+ * @param bytes Input bytes
+ * @param parent The parent directory to modify.
+ *
+ * @returns The remaining bytes.
+ */
+function parseDirectory(bytes_: Uint8Array, parent: Directory) {
+  const bytes = Array.from(bytes_);
+  bytes.shift(); // remove type byte (we know it's a directory)
+
+  const name_length = bytes.shift();
+  const name = decodeString(bytes.splice(0, name_length));
+
+  const directory = parent.createDirectory(name);
+
+  const content_length = bytes.shift();
+
+  // start at zero because we already removed all the
+  // type, name length, and name bytes (with shift() and splice())
+  for (let byte_index = 0; byte_index < content_length; byte_index++) {
+    const typeByte = bytes[byte_index];
+
+    if (typeByte == 1) {
+      const nameLength = bytes[byte_index + 1];
+      const name = decodeString(
+        bytes.slice(byte_index + 2, byte_index + 2 + nameLength),
+      );
+      const contentsLength = bytes[byte_index + 2 + nameLength];
+      const contents = decodeString(
+        bytes.slice(
+          byte_index + 3 + nameLength,
+          byte_index + 3 + nameLength + contentsLength,
+        ),
+      );
+      directory.createFile(name, contents);
+
+      const bump = 3 + nameLength + contentsLength;
+
+      byte_index += bump;
+      // decrement because for loop automatically increments
+      byte_index--;
+    }
+
+    if (typeByte == 2) {
+      const bump = parseDirectory(
+        new Uint8Array(bytes.splice(byte_index)),
+        directory,
+      );
+
+      byte_index += bump;
+      // decrement because for loop automatically increments
+      byte_index--;
+    }
+  }
+
+  return content_length;
 }
 
 /**
@@ -31,113 +88,22 @@ enum Section {
  * ```
  */
 function deserialize(serialized: string | Uint8Array) {
-  const rootDir = new Directory("", undefined);
-  let cdir: Directory;
-  let cfile: SFFile;
-  let ctype: "file" | "directory" = "directory";
-
-  const left_in_dir_contents: Array<number> = [];
-
-  let left_in_file_contents: number;
-  let left_in_name: number;
-  let section = Section.RES_TYPE;
-
-  const isCompressed = typeof serialized == "string";
-  const serialized_bytes = isCompressed
+  const is_compressed = typeof serialized == "string";
+  const serialized_bytes = is_compressed
     ? decompress(serialized)
         .split(",")
         .map(x => parseInt(x))
     : serialized;
 
-  serialized_bytes.forEach((byte_, _byteindex) => {
-    const byte = byte_;
+  const sfs = new SimulatedFilesystem();
+  parseDirectory(new Uint8Array(serialized_bytes), sfs.root);
 
-    switch (section) {
-      case Section.RES_TYPE:
-        if (byte == 1) {
-          if (cdir) cfile = cdir.createFile("");
-          else cfile = rootDir.createFile("");
+  // parseDirectory creates new directories,
+  // so set it to the old root
+  sfs.root = sfs.root.get()[0] as Directory;
+  sfs.root.parentDir = undefined;
 
-          ctype = "file";
-        } else {
-          if (cdir) cdir = cdir.createDirectory("");
-          else cdir = rootDir.createDirectory("");
-
-          ctype = "directory";
-        }
-
-        section = Section.NAME_LENGTH;
-        break;
-      case Section.NAME_LENGTH:
-        left_in_name = byte;
-        section = Section.NAME;
-
-        // checks if name length is 0. if it is, then skip
-        if (left_in_name == 0) {
-          left_in_name = undefined;
-          section = Section.CONTENT_LENGTH;
-          break;
-        }
-
-        break;
-      case Section.NAME:
-        if (ctype == "file") {
-          cfile.name += String.fromCharCode(byte);
-        } else {
-          cdir.name += String.fromCharCode(byte);
-        }
-
-        left_in_name--;
-
-        if (left_in_name <= 0) {
-          left_in_name = undefined;
-          section = Section.CONTENT_LENGTH;
-          break;
-        }
-
-        break;
-      case Section.CONTENT_LENGTH:
-        if (ctype == "file") {
-          left_in_file_contents = byte;
-        } else {
-          left_in_dir_contents.push(byte);
-          // because we have the directory now, we jump straight
-          // to the header of the first file inside the directory
-          section = Section.RES_TYPE;
-          break;
-        }
-
-        section = Section.FILE_CONTENT;
-        break;
-      case Section.FILE_CONTENT:
-        cfile.write(
-          new Uint8Array(Array.from(cfile.contents).concat([byte])),
-        );
-
-        left_in_file_contents--;
-        left_in_dir_contents[left_in_dir_contents.length - 1]--;
-
-        if (left_in_file_contents <= 0) {
-          left_in_file_contents = undefined;
-
-          if (left_in_dir_contents[left_in_dir_contents.length - 1] <= 0) {
-            left_in_dir_contents.pop();
-            cdir = cdir.parentDir;
-
-            section = Section.RES_TYPE;
-            break;
-          }
-
-          section = Section.RES_TYPE;
-          break;
-        }
-    }
-  });
-
-  const endDir = rootDir.contents[0] as Directory;
-  endDir.parentDir = undefined;
-
-  return new SimulatedFilesystem(endDir);
+  return sfs;
 }
 
 export default deserialize;
