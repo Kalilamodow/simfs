@@ -4,4 +4,8 @@ class CannotDelete extends Error {
 }
 class FileExists extends Error {
 }
-export { ResourceNotFound, CannotDelete, FileExists };
+class WriteTooLarge extends Error {
+}
+class UnsupportedEncoding extends Error {
+}
+export { ResourceNotFound, CannotDelete, FileExists, WriteTooLarge, UnsupportedEncoding, };

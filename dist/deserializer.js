@@ -9,7 +9,7 @@ const decodeString = (bytes) => Array.from(bytes)
  * @param bytes Input bytes
  * @param parent The parent directory to modify.
  *
- * @returns The remaining bytes.
+ * @returns The length of the parsed directory
  */
 function parseDirectory(bytes_, parent) {
     const bytes = Array.from(bytes_);
@@ -17,7 +17,8 @@ function parseDirectory(bytes_, parent) {
     const name_length = bytes.shift();
     const name = decodeString(bytes.splice(0, name_length));
     const directory = parent.createDirectory(name);
-    const content_length = bytes.shift();
+    // content length is two bytes, so shift twice
+    const content_length = bytes.shift() + bytes.shift();
     // start at zero because we already removed all the
     // type, name length, and name bytes (with shift() and splice())
     for (let byte_index = 0; byte_index < content_length; byte_index++) {

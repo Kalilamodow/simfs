@@ -17,7 +17,16 @@ class SFFile {
     constructor(name, contents, parentDir) {
         this.name = name;
         if (typeof contents == "string") {
+            if (contents
+                .split("")
+                .map(c => c.charCodeAt(0))
+                .some(c => c > 0xff)) {
+                throw new errors.UnsupportedEncoding();
+            }
             contents = new Uint8Array(contents.split("").map(c => c.charCodeAt(0)));
+        }
+        if (contents.length > 0xff) {
+            throw new errors.WriteTooLarge();
         }
         this.contents = contents || new Uint8Array();
         this.parentDir = parentDir;
@@ -31,6 +40,17 @@ class SFFile {
     }
     /** Write a string or Uint8Array to this file */
     write(newContents) {
+        if (newContents.length > 0xff) {
+            throw new errors.WriteTooLarge();
+        }
+        if (typeof newContents == "string") {
+            if (newContents
+                .split("")
+                .map(c => c.charCodeAt(0))
+                .some(c => c > 0xff)) {
+                throw new errors.UnsupportedEncoding();
+            }
+        }
         this.contents =
             typeof newContents == "string"
                 ? new Uint8Array(newContents.split("").map(c => c.charCodeAt(0)))
@@ -160,7 +180,18 @@ class Directory {
             const serializedResource = resource.serialize();
             content_bytes.push(...serializedResource);
         });
-        res.push(content_bytes.length);
+        // save content bytes as two bytes
+        const base_content_length = content_bytes.length;
+        if (base_content_length < 0xff) {
+            // first push 0 as padding
+            res.push(0, base_content_length);
+        }
+        else {
+            const content_length_hex = base_content_length.toString(16);
+            const first = parseInt(content_length_hex.slice(0, 2), 16);
+            const second = parseInt(content_length_hex.slice(2), 16);
+            res.push(first, second);
+        }
         res.push(...content_bytes);
         return new Uint8Array(res);
     }

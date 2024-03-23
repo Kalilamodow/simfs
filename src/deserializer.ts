@@ -24,7 +24,8 @@ function parseDirectory(bytes_: Uint8Array, parent: Directory) {
 
   const directory = parent.createDirectory(name);
 
-  const content_length = bytes.shift();
+  // content length is two bytes, so shift twice
+  const content_length = bytes.shift() + bytes.shift();
 
   // start at zero because we already removed all the
   // type, name length, and name bytes (with shift() and splice())
