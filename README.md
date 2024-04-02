@@ -1,4 +1,4 @@
-# simfs.js
+# simfs
 
 Simple simulated filesystem in Typescript.
 
