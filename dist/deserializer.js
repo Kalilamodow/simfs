@@ -17,8 +17,12 @@ function parseDirectory(bytes_, parent) {
     const name_length = bytes.shift();
     const name = decodeString(bytes.splice(0, name_length));
     const directory = parent.createDirectory(name);
-    // content length is two bytes, so shift twice
-    const content_length = bytes.shift() + bytes.shift();
+    const content_length = (() => {
+        const left = bytes.shift();
+        const right = bytes.shift();
+        const hex = left.toString(16) + right.toString(16);
+        return parseInt(hex, 16);
+    })();
     // start at zero because we already removed all the
     // type, name length, and name bytes (with shift() and splice())
     for (let byte_index = 0; byte_index < content_length; byte_index++) {
