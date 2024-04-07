@@ -13,10 +13,11 @@ class SimulatedFilesystem {
   /**
    * The main Simulated Filesystem class.
    * @param from (optional) If you already have a Directory, you can use it as the root. If
-   * you have a serialized string, you can use that instead as well.
+   * you have a serialized string/Uint8Array, you can use that instead as well.
    */
-  constructor(from?: Directory | string) {
-    if (typeof from == "string") from = deserialize(from).root;
+  constructor(from?: Directory | string | Uint8Array) {
+    if (typeof from == "string" || from instanceof Uint8Array)
+      from = deserialize(from).root;
 
     this.root = from || new Directory("");
     this.cwd_path = "/";
@@ -78,7 +79,7 @@ class SimulatedFilesystem {
 
   /**
    * Serializes this SimulatedFilesystem to a bytestring, compressed
-   * with lz-string.
+   * with lz-string (unless `doCompress` is set to false.)
    *
    * @param doCompress (true) Whether to compress the data or not
    * @returns The serialized SimulatedFilesystem

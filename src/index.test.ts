@@ -80,3 +80,19 @@ describe("Directories", () => {
     expect(dir.get("test 1.txt")).toBeNull();
   });
 });
+
+describe("Deserializable", () => {
+  const sfs = new SimulatedFilesystem();
+  const serialized_compress = sfs.serialize();
+  const serialized_nocompress = sfs.serialize(false);
+
+  it("can be deserialized with compression", () => {
+    const deserialized = new SimulatedFilesystem(serialized_compress);
+    expect(deserialized).toEqual(sfs);
+  });
+
+  it("can be deserialized without compression", () => {
+    const deserialized = new SimulatedFilesystem(serialized_nocompress);
+    expect(deserialized).toEqual(sfs);
+  });
+});
