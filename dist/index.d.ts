@@ -7,9 +7,9 @@ declare class SimulatedFilesystem {
     /**
      * The main Simulated Filesystem class.
      * @param from (optional) If you already have a Directory, you can use it as the root. If
-     * you have a serialized string, you can use that instead as well.
+     * you have a serialized string/Uint8Array, you can use that instead as well.
      */
-    constructor(from?: Directory | string);
+    constructor(from?: Directory | string | Uint8Array);
     /** Modifies current working directory (`this.cwd`).
      *
      * @returns `true` on success, otherwise `false` (if the directory doesn't exist, or it's a file). */
@@ -27,7 +27,7 @@ declare class SimulatedFilesystem {
     get_by_path(resource_path: string): Resource | null;
     /**
      * Serializes this SimulatedFilesystem to a bytestring, compressed
-     * with lz-string.
+     * with lz-string (unless `doCompress` is set to false.)
      *
      * @param doCompress (true) Whether to compress the data or not
      * @returns The serialized SimulatedFilesystem

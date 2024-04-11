@@ -67,6 +67,18 @@ class SFFile implements ResourceData {
       );
   }
 
+  /**
+   * Renames this file.
+   */
+  public rename(newName: string) {
+    if (!this.parentDir)
+      throw new errors.CannotDelete(
+        "No parent provided, or root directory",
+      );
+
+    this.parentDir.rename(this.name, newName);
+  }
+
   /** Write a string or Uint8Array to this file */
   public write(newContents: string | Uint8Array) {
     if (newContents.length > 0xff) {
@@ -155,6 +167,30 @@ class Directory implements ResourceData {
       );
 
     this.parentDir.delete(this.name);
+  }
+
+  /**
+   * Renames a **child** of this directory. To delete this, use the `renameSelf` method
+   */
+  public rename(resourceName: string, newName: string) {
+    const resource = this.get(resourceName);
+    if (!resource)
+      throw new errors.ResourceNotFound(
+        "Could not find resource to rename",
+      );
+    resource.name = newName;
+  }
+
+  /**
+   * Deletes **this** directory. To rename a child, use the `rename` method
+   */
+  public renameSelf(newName: string) {
+    if (!this.parentDir)
+      throw new errors.CannotDelete(
+        "No parent provided, or root directory",
+      );
+
+    this.parentDir.rename(this.name, newName);
   }
 
   /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */

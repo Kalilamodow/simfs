@@ -38,6 +38,14 @@ class SFFile {
         else
             throw new errors.CannotDelete("No parent provided when creating file");
     }
+    /**
+     * Renames this file.
+     */
+    rename(newName) {
+        if (!this.parentDir)
+            throw new errors.CannotDelete("No parent provided, or root directory");
+        this.parentDir.rename(this.name, newName);
+    }
     /** Write a string or Uint8Array to this file */
     write(newContents) {
         if (newContents.length > 0xff) {
@@ -110,6 +118,23 @@ class Directory {
         if (!this.parentDir)
             throw new errors.CannotDelete("No parent provided, or root directory");
         this.parentDir.delete(this.name);
+    }
+    /**
+     * Renames a **child** of this directory. To delete this, use the `renameSelf` method
+     */
+    rename(resourceName, newName) {
+        const resource = this.get(resourceName);
+        if (!resource)
+            throw new errors.ResourceNotFound("Could not find resource to rename");
+        resource.name = newName;
+    }
+    /**
+     * Deletes **this** directory. To rename a child, use the `rename` method
+     */
+    renameSelf(newName) {
+        if (!this.parentDir)
+            throw new errors.CannotDelete("No parent provided, or root directory");
+        this.parentDir.rename(this.name, newName);
     }
     /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */
     addFile(file, autoParentDir = true) {

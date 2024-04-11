@@ -26,6 +26,10 @@ declare class SFFile implements ResourceData {
     constructor(name: string, contents?: string | Uint8Array, parentDir?: Directory);
     /** Deletes this file from its parent directory */
     delete(): void;
+    /**
+     * Renames this file.
+     */
+    rename(newName: string): void;
     /** Write a string or Uint8Array to this file */
     write(newContents: string | Uint8Array): void;
     /** This file's contents, as a string */
@@ -57,6 +61,14 @@ declare class Directory implements ResourceData {
     delete(cname: string): void;
     /** Deletes this directory from its parent */
     deleteSelf(): void;
+    /**
+     * Renames a **child** of this directory. To delete this, use the `renameSelf` method
+     */
+    rename(resourceName: string, newName: string): void;
+    /**
+     * Deletes **this** directory. To rename a child, use the `rename` method
+     */
+    renameSelf(newName: string): void;
     /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */
     addFile(file: SFFile, autoParentDir?: boolean): SFFile;
     /** Creates a file as a subresource of this Directory */
