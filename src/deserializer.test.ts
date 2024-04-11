@@ -1,35 +1,28 @@
 import SimulatedFilesystem from ".";
 import deserialize from "./deserializer";
-// import * as fs from "fs";
 
-describe("simfs serialization", () => {
+describe("Deserializer", () => {
   const sfs = new SimulatedFilesystem();
-  const root = sfs.root;
-
-  root.createFile("test.txt", "hello world".repeat(15));
-  root.createFile("test 2.txt", "hello world number 2");
-
-  const dir = root.createDirectory("subdir".repeat(4));
-  dir.createFile("test 3.txt", "hello world number 3".repeat(10));
-  dir.createFile("test 4.txt", "hello world number 4");
-
-  const serialized = sfs.serialize();
+  const serialized_compress = sfs.serialize();
   const serialized_nocompress = sfs.serialize(false);
 
-  it("can be deserialized with compression", () => {
-    const deserialized = deserialize(serialized);
-
+  it("can deserialize", () => {
+    const deserialized = deserialize(serialized_compress);
     expect(deserialized).toEqual(sfs);
   });
 
-  it("can be deserialized without compression", () => {
+  it("can deserialize without compression", () => {
     const deserialized = deserialize(serialized_nocompress);
-
     expect(deserialized).toEqual(sfs);
   });
 
-  // // write to file
-  // const writeStream = fs.createWriteStream("test.simfs_nc");
-  // writeStream.write(serialized_nocompress);
-  // writeStream.end();
+  it("can deserialize within simfs constructor", () => {
+    const deserialized = new SimulatedFilesystem(serialized_compress);
+    expect(deserialized).toEqual(sfs);
+  });
+
+  it("can deserialize within simfs constructor without compression", () => {
+    const deserialized = new SimulatedFilesystem(serialized_nocompress);
+    expect(deserialized).toEqual(sfs);
+  });
 });
