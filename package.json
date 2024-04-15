@@ -1,17 +1,16 @@
 {
   "name": "simfs",
   "type": "module",
-  "version": "0.2.4",
-  "main": "dist/index.js",
+  "version": "0.2.5",
   "files": [
-    "dist"
+    "dist/"
   ],
   "author": "kalilamodow",
   "license": "UNLICENSED",
   "private": false,
   "repository": {
     "type": "url",
-    "url": "https://github.com/Kalilamodow/simfs-node"
+    "url": "https://github.com/Kalilamodow/simfs"
   },
   "scripts": {
     "build": "rm -rf dist && tsc",
