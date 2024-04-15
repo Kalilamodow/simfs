@@ -54,7 +54,8 @@ declare class Directory implements ResourceData {
     /**
      * Resource used for containing more resources
      * @param name The name of this Directory
-     * @param parentDir The parent Directory of this Directory
+     * @param parentDir The parent Directory of this Directory (note: if this
+     * isn't set, it won't check for a valid directory name as it assumes it's root)
      */
     constructor(name: string, parentDir?: Directory);
     /** Deletes a direct child of this directory */
@@ -115,4 +116,4 @@ declare class Directory implements ResourceData {
      */
     static serialize(directory: Directory): Uint8Array;
 }
-export { SFFile, Directory, Resource };
+export { Directory, Resource, SFFile };

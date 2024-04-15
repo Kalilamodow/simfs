@@ -113,5 +113,52 @@ class SimulatedFilesystem {
   }
 }
 
+/**
+ * Verifies a file/folder name.
+ * @param customInvalidCharacters (optional) If you want to define your own invalid characters.
+ * @returns True on valid, false on invalid.
+ */
+function verifyResourceName(
+  name: string,
+  customInvalidCharacters?: string[],
+) {
+  // can't be over 255 because serialization only has one
+  // byte for the name length which has a max of 255
+  if (name.length > 255 || name.length <= 0) return false;
+
+  const invalidCharacters = customInvalidCharacters || [
+    "\\",
+    "/",
+    ":",
+    "*",
+    "?",
+    '"',
+    "<",
+    ">",
+    "|",
+  ];
+
+  if (!customInvalidCharacters) {
+    // add control characters
+    const control = Array.from(Array(32)).map((x, i) => i);
+    invalidCharacters.push(...control.map(x => String.fromCharCode(x)));
+    const del = String.fromCharCode(0x7f);
+    invalidCharacters.push(del);
+  }
+
+  if (invalidCharacters.some(x => name.includes(x))) return false;
+  if (name.trim().length == 0) return false; // is  (remove whitespace)
+  if (
+    name
+      .replace(/s/g, "")
+      .split("")
+      .every(x => x == ".")
+  )
+    return; // only has dots
+  if (name.endsWith(".")) return false;
+
+  return true;
+}
+
 export default SimulatedFilesystem;
-export { Directory, SFFile };
+export { Directory, Resource, SFFile, verifyResourceName };

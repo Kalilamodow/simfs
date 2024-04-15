@@ -1,3 +1,4 @@
+import { verifyResourceName } from ".";
 import * as errors from "./errors";
 // Called SFFile because "File" is already a
 // class in Javascript
@@ -16,6 +17,8 @@ class SFFile {
      */
     constructor(name, contents, parentDir) {
         this.name = name;
+        if (!verifyResourceName(name))
+            throw new errors.InvalidName();
         if (typeof contents == "string") {
             if (contents
                 .split("")
@@ -42,6 +45,8 @@ class SFFile {
      * Renames this file.
      */
     rename(newName) {
+        if (!verifyResourceName(newName))
+            throw new errors.InvalidName();
         if (!this.parentDir)
             throw new errors.CannotDelete("No parent provided, or root directory");
         this.parentDir.rename(this.name, newName);
@@ -99,9 +104,13 @@ class Directory {
     /**
      * Resource used for containing more resources
      * @param name The name of this Directory
-     * @param parentDir The parent Directory of this Directory
+     * @param parentDir The parent Directory of this Directory (note: if this
+     * isn't set, it won't check for a valid directory name as it assumes it's root)
      */
     constructor(name, parentDir) {
+        if (!verifyResourceName(name) && parentDir) {
+            throw new errors.InvalidName();
+        }
         this.name = name;
         this.parentDir = parentDir;
         this.contents = [];
@@ -123,6 +132,8 @@ class Directory {
      * Renames a **child** of this directory. To delete this, use the `renameSelf` method
      */
     rename(resourceName, newName) {
+        if (!verifyResourceName(newName))
+            throw new errors.InvalidName();
         const resource = this.get(resourceName);
         if (!resource)
             throw new errors.ResourceNotFound("Could not find resource to rename");
@@ -132,6 +143,8 @@ class Directory {
      * Deletes **this** directory. To rename a child, use the `rename` method
      */
     renameSelf(newName) {
+        if (!verifyResourceName(newName))
+            throw new errors.InvalidName();
         if (!this.parentDir)
             throw new errors.CannotDelete("No parent provided, or root directory");
         this.parentDir.rename(this.name, newName);
@@ -221,4 +234,4 @@ class Directory {
         return new Uint8Array(res);
     }
 }
-export { SFFile, Directory };
+export { Directory, SFFile };

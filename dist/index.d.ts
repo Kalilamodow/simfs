@@ -52,5 +52,11 @@ declare class SimulatedFilesystem {
      */
     serialize(doCompress?: boolean): string | Uint8Array;
 }
+/**
+ * Verifies a file/folder name.
+ * @param customInvalidCharacters (optional) If you want to define your own invalid characters.
+ * @returns True on valid, false on invalid.
+ */
+declare function verifyResourceName(name: string, customInvalidCharacters?: string[]): boolean;
 export default SimulatedFilesystem;
-export { Directory, SFFile };
+export { Directory, Resource, SFFile, verifyResourceName };

@@ -8,4 +8,6 @@ class WriteTooLarge extends Error {
 }
 class UnsupportedEncoding extends Error {
 }
-export { ResourceNotFound, CannotDelete, FileExists, WriteTooLarge, UnsupportedEncoding, };
+class InvalidName extends Error {
+}
+export { ResourceNotFound, CannotDelete, FileExists, WriteTooLarge, UnsupportedEncoding, InvalidName, };

@@ -12,17 +12,22 @@ const decodeString = (bytes: Uint8Array | number[]) =>
  * then modifies the parent directory accordingly.
  * @param bytes Input bytes
  * @param parent The parent directory to modify.
+ * @param isRoot Whether the parsed directory is root
  *
  * @returns The length of the parsed directory
  */
-function parseDirectory(bytes_: Uint8Array, parent: Directory) {
+function parseDirectory(
+  bytes_: Uint8Array,
+  parent: Directory,
+  isRoot = false,
+) {
   const bytes = Array.from(bytes_);
   bytes.shift(); // remove type byte (we know it's a directory)
 
   const name_length = bytes.shift();
   const name = decodeString(bytes.splice(0, name_length));
 
-  const directory = parent.createDirectory(name);
+  const directory = parent.createDirectory(isRoot ? "ROOT" : name);
 
   const content_length = (() => {
     const left = bytes.shift();
@@ -102,11 +107,11 @@ function deserialize(serialized: string | Uint8Array) {
     : serialized;
 
   const sfs = new SimulatedFilesystem();
-  parseDirectory(new Uint8Array(serialized_bytes), sfs.root);
-
-  // parseDirectory creates new directories,
-  // so set it to the old root
-  sfs.root = sfs.root.get()[0] as Directory;
+  
+  const temproot = new Directory("");
+  parseDirectory(new Uint8Array(serialized_bytes), temproot, true);
+  sfs.root = temproot.get()[0] as Directory;
+  sfs.root.name = "";
   sfs.root.parentDir = undefined;
 
   return sfs;

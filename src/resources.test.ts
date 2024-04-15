@@ -64,6 +64,17 @@ describe("Directories", () => {
 
     directory.deleteSelf(); // cleanup
   });
+
+  it("does not allow invalid directory names", () => {
+    // note: checking for names of *files* is handled in the File tests
+    // these are only checking for directory names
+    expect(() => root.createDirectory("valid name")).not.toThrow();
+    expect(() => root.createDirectory("td1/td2")).toThrow();
+    expect(() => root.createDirectory("td1\\td2")).toThrow();
+
+    // cleanup
+    root.get().forEach(x => root.delete(x.name));
+  });
 });
 
 describe("Files", () => {
@@ -120,5 +131,42 @@ describe("Files", () => {
     expect(file).toBeInstanceOf(SFFile);
     file.delete();
     expect(directory.get("file.txt")).toBeNull();
+  });
+
+  it("does not allow invalid file names", () => {
+    const toTest = [
+      "hello/world",
+      "<Rerrr>",
+      "..",
+      ".",
+      "   ",
+      "e.",
+      ".e",
+      "ee|.<<>E\\",
+      "hello\\world",
+    ];
+
+    expect(() => {
+      directory.createFile("valid file name.txt", "hello world");
+    }).not.toThrow();
+
+    for (const name of toTest) {
+      expect(() => {
+        directory.createFile(name, "hello world");
+      }).toThrow();
+    }
+
+    for (const name of toTest) {
+      directory.createFile("filename", "hello world");
+
+      expect(() => {
+        directory.rename("filename", name);
+      }).toThrow();
+
+      directory.delete("filename");
+    }
+
+    if (directory.get().length > 0)
+      directory.get().forEach(f => directory.delete(f.name));
   });
 });

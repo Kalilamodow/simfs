@@ -1,5 +1,6 @@
 import { decompress } from "lz-string";
 import SimulatedFilesystem from ".";
+import { Directory } from "./resources";
 const decodeString = (bytes) => Array.from(bytes)
     .map(x => String.fromCharCode(x))
     .join("");
@@ -8,15 +9,16 @@ const decodeString = (bytes) => Array.from(bytes)
  * then modifies the parent directory accordingly.
  * @param bytes Input bytes
  * @param parent The parent directory to modify.
+ * @param isRoot Whether the parsed directory is root
  *
  * @returns The length of the parsed directory
  */
-function parseDirectory(bytes_, parent) {
+function parseDirectory(bytes_, parent, isRoot = false) {
     const bytes = Array.from(bytes_);
     bytes.shift(); // remove type byte (we know it's a directory)
     const name_length = bytes.shift();
     const name = decodeString(bytes.splice(0, name_length));
-    const directory = parent.createDirectory(name);
+    const directory = parent.createDirectory(isRoot ? "ROOT" : name);
     const content_length = (() => {
         const left = bytes.shift();
         const right = bytes.shift();
@@ -75,10 +77,10 @@ function deserialize(serialized) {
             .map(x => parseInt(x))
         : serialized;
     const sfs = new SimulatedFilesystem();
-    parseDirectory(new Uint8Array(serialized_bytes), sfs.root);
-    // parseDirectory creates new directories,
-    // so set it to the old root
-    sfs.root = sfs.root.get()[0];
+    const temproot = new Directory("");
+    parseDirectory(new Uint8Array(serialized_bytes), temproot, true);
+    sfs.root = temproot.get()[0];
+    sfs.root.name = "";
     sfs.root.parentDir = undefined;
     return sfs;
 }

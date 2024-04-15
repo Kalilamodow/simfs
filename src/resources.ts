@@ -1,3 +1,4 @@
+import { verifyResourceName } from ".";
 import * as errors from "./errors";
 
 /**
@@ -35,6 +36,8 @@ class SFFile implements ResourceData {
     contents?: string | Uint8Array,
     parentDir?: Directory,
   ) {
+    if (!verifyResourceName(name)) throw new errors.InvalidName();
+
     if (typeof contents == "string") {
       if (
         contents
@@ -71,6 +74,8 @@ class SFFile implements ResourceData {
    * Renames this file.
    */
   public rename(newName: string) {
+    if (!verifyResourceName(newName)) throw new errors.InvalidName();
+
     if (!this.parentDir)
       throw new errors.CannotDelete(
         "No parent provided, or root directory",
@@ -143,9 +148,14 @@ class Directory implements ResourceData {
   /**
    * Resource used for containing more resources
    * @param name The name of this Directory
-   * @param parentDir The parent Directory of this Directory
+   * @param parentDir The parent Directory of this Directory (note: if this
+   * isn't set, it won't check for a valid directory name as it assumes it's root)
    */
   constructor(name: string, parentDir?: Directory) {
+    if (!verifyResourceName(name) && parentDir) {
+      throw new errors.InvalidName();
+    }
+
     this.name = name;
 
     this.parentDir = parentDir;
@@ -173,6 +183,8 @@ class Directory implements ResourceData {
    * Renames a **child** of this directory. To delete this, use the `renameSelf` method
    */
   public rename(resourceName: string, newName: string) {
+    if (!verifyResourceName(newName)) throw new errors.InvalidName();
+
     const resource = this.get(resourceName);
     if (!resource)
       throw new errors.ResourceNotFound(
@@ -185,6 +197,8 @@ class Directory implements ResourceData {
    * Deletes **this** directory. To rename a child, use the `rename` method
    */
   public renameSelf(newName: string) {
+    if (!verifyResourceName(newName)) throw new errors.InvalidName();
+
     if (!this.parentDir)
       throw new errors.CannotDelete(
         "No parent provided, or root directory",
@@ -321,4 +335,4 @@ class Directory implements ResourceData {
   }
 }
 
-export { SFFile, Directory, Resource };
+export { Directory, Resource, SFFile };
