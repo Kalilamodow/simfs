@@ -5,12 +5,10 @@ Simple simulated filesystem in Typescript.
 ## Features:
 
 - Full web compatibility
-- Serialization and deserialization in a simple binary format
+- Serialization and deserialization
+- Really good documentation
 
 ## API reference
-
-There are extensive JSDoc comments on functions and classes. Honestly, they are probably better than this.
-
 - SimulatedFilesystem (default import)
 - Directory
 - SFFile
@@ -18,8 +16,14 @@ There are extensive JSDoc comments on functions and classes. Honestly, they are 
 - (simfs/resources) SFFile
 - (simfs/deserializer) deserialize()
 
-#### SimulatedFilesystem
+### SimulatedFilesystem
 
+> The main Simulated Filesystem class.
+> @param from (optional)  
+> If you already have a Directory, you can use it as the root. If
+you have a serialized string/Uint8Array, you can use that instead as well. ([Serialization](#serialization and deserialization))
+
+Example
 ```typescript
 // creating new
 const simfs = new SimulatedFilesystem();
@@ -33,8 +37,11 @@ const serialized = someOtherSimfs.serialize();
 const simfs = new SimulatedFilesystem(serialized);
 ```
 
-#### Directory class
-
+### Directory
+> Resource used for containing more resources  
+> @param name The name of this Directory  
+> @param parentDir The parent Directory of this Directory (note: if this
+> isn't set, it won't check for a valid directory name as it assumes it's root)
 ```typescript
 // "root" is the root directory
 const myDirectory = simfs.root;
@@ -60,9 +67,16 @@ myDirectory.get(fileName, "directory"); // TypeError
 myDirectory.get(directoryName, "file"); // TypeError
 ```
 
-#### SFFile class
+### SFFile class
 
-Note: It's called SFFile because "File" already exists
+> Note: It's called SFFile because "File" already exists
+
+
+> The file class for a simfs. Just a name and some contents.
+> You shouldn't really ever need to initialize this class. Instead, use the
+> `createFile` method on the parent directory.  
+> @param name The name of this file  
+> @param contents The contents of this file
 
 ```typescript
 // creating
@@ -99,13 +113,10 @@ const allAlone = new SFFile("hello.txt", "hello");
 allAlone.delete(); // ERROR: CannotDelete()
 ```
 
-#### Serialization and deserialization
-
-simfs supports a simple serialization format, and will compress it with lz-string unless explicitly disabled.
+### Serialization
+> simfs uses a custom serialization format, and will compress it with lz-string unless explicitly disabled.
 
 ```typescript
-// SERIALIZATION
-
 // all resources support "serialize" method
 someFile.serialize(); // uncompressed
 someDir.serialize(); // uncompressed
@@ -113,21 +124,26 @@ someDir.serialize(); // uncompressed
 // only serializing with SimulatedFilesystem.serialize will compress
 simfs.serialize(); // compressed
 simfs.serialize(false); // don't compress
-
-// DESERIALIZATION
-import deserialize from "simfs/deserializer";
-const simfs = createSampleSimfs(); // THIS DOES NOT EXIST
-
-const serialized_compressed = simfs.serialize();
-const serialized_uncompressed = simfs.serialize(false);
-
-const simfs_c = deserialize(serialized_compressed);
-const simfs_u = deserialize(serialized_uncompressed);
-
-simfs_u == simfs_c; // true
 ```
 
-Like I said before, there's a lot better documentation in the JSDoc comments. You'd be better off just using VSCode to browse through the methods.
+### Deserialization
+> Deserializes a serialized SimulatedFilesystem.  
+> @param serialized The serialized SimulatedFilesystem  
+> @returns Deserialized SimulatedFilesystem
+
+```ts
+import SimulatedFilesystem from 'simfs';
+import deserialize from 'simfs/deserializer';
+
+const sfs = new SimulatedFilesystem(); // create the simfs
+const serialized = sfs.serialize(); // serialize it
+console.log(serialized); // probably some weird bytes
+const deserialized = deserialize(serialized); // deserialize it
+
+// these should output the same thing:
+console.log(sfs);
+console.log(deserialized);
+```
 
 ## Contributing
 

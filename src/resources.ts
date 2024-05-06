@@ -30,6 +30,42 @@ class SFFile implements ResourceData {
    * `createFile` method on the parent directory.
    * @param name The name of this file
    * @param contents The contents of this file
+   * 
+   * @example
+   * ```typescript
+   * // creating
+   * const someFile = new SFFile("someFile.txt", "raspberry");
+   * const anotherFile = new SFFile(
+   *   "anotherFile.txt",
+   *   // this is just "raspberry"
+   *   new Uint8Array([114, 97, 115, 112, 98, 101, 114, 114, 121]),
+   * );
+   *
+   * // getting contents
+   * someFile.read(); // "raspberry"
+   * someFile.contents; // Uint8Array([114, 97, 115, 112, 98, 101, 114, 114, 121])
+   *
+   * // writing
+   * someFile.write("blackberry"); // void
+   * someFile.write("🍓"); // ERROR: UnsupportedEncoding()
+   * someFile.write("hello".repeat(9999)); // ERROR: WriteTooLarge()
+   *
+   * // you can only delete it if it has a parent directory.
+   * // so this will work:
+   * const dir = simfs.root;
+   * const f = dir.createFile("hello.txt", "hello");
+   *
+   * // or
+   * const f = new SFFile("hello.txt", "hello");
+   * dir.addFile(f);
+   *
+   * f.delete();
+   * dir.get("hello.txt"); // null
+   *
+   * // but this will not:
+   * const allAlone = new SFFile("hello.txt", "hello");
+   * allAlone.delete(); // ERROR: CannotDelete()
+    ```
    */
   constructor(
     public name: string,
@@ -150,6 +186,32 @@ class Directory implements ResourceData {
    * @param name The name of this Directory
    * @param parentDir The parent Directory of this Directory (note: if this
    * isn't set, it won't check for a valid directory name as it assumes it's root)
+   * 
+   * @example
+   * ```typescript
+   * // "root" is the root directory
+   * const myDirectory = simfs.root;
+   *
+   * // creating resources
+   * const file = subdirectory.createFile("file.txt", "eeee");
+   * const subdirectory = myDirectory.createDirectory("subdirectory");
+   * subdirectory.createFile("secrets.txt", "sorry, they're a secret");
+   *
+   * // getting resource
+   * myDirectory.get(); // Array of resources
+   * myDirectory.get("file.txt"); // SFFile
+   * myDirectory.get("subdirectory"); // Directory
+   * myDirectory.get("old mcdonald had a farm"); // null
+   *
+   * // getting resources with specific types
+   * myDirectory.get(fileName, "file"); // SFFile
+   * myDirectory.get(directoryName, "directory"); // Directory
+   * myDirectory.get("banana", "file"); // null
+   * myDirectory.get("apple", "directory"); // null
+   *
+   * myDirectory.get(fileName, "directory"); // TypeError
+   * myDirectory.get(directoryName, "file"); // TypeError
+    ```
    */
   constructor(name: string, parentDir?: Directory) {
     if (!verifyResourceName(name) && parentDir) {

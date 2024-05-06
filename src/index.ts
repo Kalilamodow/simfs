@@ -14,6 +14,20 @@ class SimulatedFilesystem {
    * The main Simulated Filesystem class.
    * @param from (optional) If you already have a Directory, you can use it as the root. If
    * you have a serialized string/Uint8Array, you can use that instead as well.
+   * 
+   * @example
+   * ```typescript
+   * // creating new
+   * const simfs = new SimulatedFilesystem();
+   *
+   * // creating from an existing directory
+   * const directory = new Directory();
+   * const simfs = new SimulatedFilesystem(directory);
+   *
+   * // creating from a compressed serialized string
+   * const serialized = someOtherSimfs.serialize();
+   * const simfs = new SimulatedFilesystem(serialized);
+   * ```
    */
   constructor(from?: Directory | string | Uint8Array) {
     if (typeof from == "string" || from instanceof Uint8Array)
