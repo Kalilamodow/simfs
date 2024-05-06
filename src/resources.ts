@@ -224,7 +224,10 @@ class Directory implements ResourceData {
     this.contents = [];
   }
 
-  /** Deletes a direct child of this directory */
+  /** 
+   * Deletes a direct child of this directory 
+   * @param cname Name of the child
+   */
   public delete(cname: string) {
     const newContents = this.contents.filter(e => e.name != cname);
     if (newContents === this.contents) throw new errors.ResourceNotFound();
@@ -256,7 +259,8 @@ class Directory implements ResourceData {
   }
 
   /**
-   * Deletes **this** directory. To rename a child, use the `rename` method
+   * Renames **this** directory. To rename a child, use the `rename` method
+   * @param newName The new name.
    */
   public renameSelf(newName: string) {
     if (!verifyResourceName(newName)) throw new errors.InvalidName();
@@ -269,7 +273,11 @@ class Directory implements ResourceData {
     this.parentDir.rename(this.name, newName);
   }
 
-  /** adds an ALREADY INITIALIZED SFFile instance to this directory's contents */
+  /** 
+   * Adds an ALREADY INITIALIZED SFFile instance to this directory's contents 
+   * @param file The file to add
+   * @param [autoParentDir=true] Whether to automatically set this as the parent directory
+   */
   public addFile(file: SFFile, autoParentDir: boolean = true): SFFile {
     if (this.contents.map(x => x.name).includes(file.name))
       throw new errors.FileExists("Cannot add file, as it already exists");
@@ -282,14 +290,20 @@ class Directory implements ResourceData {
     return file;
   }
 
-  /** Creates a file as a subresource of this Directory */
+  /**
+   * Creates a file as a subresource of this Directory 
+   * @param name File name
+   * @param contents (optional) The file contents
+  */
   public createFile(name: string, contents?: string | Uint8Array): SFFile {
     const file = new SFFile(name, contents, this);
     this.addFile(file);
     return file;
   }
 
-  /** Creates a directory as a subresource of this Directory */
+  /** Creates a directory as a subresource of this Directory 
+   * @param name Directory name
+  */
   public createDirectory(name: string): Directory {
     const dir = new Directory(name, this);
     this.contents.push(dir);
