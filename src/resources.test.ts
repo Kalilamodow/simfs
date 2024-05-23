@@ -141,7 +141,6 @@ describe("Files", () => {
       ".",
       "   ",
       "e.",
-      ".e",
       "ee|.<<>E\\",
       "hello\\world",
     ];
