@@ -65,13 +65,11 @@ function parseDirectory(
 
     if (typeByte == 2) {
       const bump = parseDirectory(
-        new Uint8Array(bytes.splice(byte_index)),
+        new Uint8Array(bytes.slice(byte_index)),
         directory,
       );
 
       byte_index += bump;
-      // decrement because for loop automatically increments
-      byte_index--;
     }
   }
 
@@ -107,7 +105,7 @@ function deserialize(serialized: string | Uint8Array) {
     : serialized;
 
   const sfs = new SimulatedFilesystem();
-  
+
   const temproot = new Directory("");
   parseDirectory(new Uint8Array(serialized_bytes), temproot, true);
   sfs.root = temproot.get()[0] as Directory;
